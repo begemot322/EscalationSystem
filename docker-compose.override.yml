@@ -1,0 +1,83 @@
+services:
+  escalationdb:
+    container_name: escalationdb
+    environment:
+      POSTGRES_USER: 123
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: EscalationDb 
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - escalation_data:/var/lib/postgresql/data
+      
+  userdb:
+    container_name: userdb
+    environment:
+      POSTGRES_USER: 123
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: UserDb
+    restart: always
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_data:/var/lib/postgresql/data
+    
+  messagebroker:
+    container_name: messagebroker    
+    hostname: ecommerce-mq               
+    environment:
+      - RABBITMQ_DEFAULT_USER=123     
+      - RABBITMQ_DEFAULT_PASS=123    
+    restart: always                     
+    ports:
+      - "5672:5672"                    
+      - "15672:15672"        
+    
+  
+  escalation.api:
+    depends_on:
+      - escalationdb
+      - messagebroker
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Database=Host=escalationdb;Port=5432;Database=EscalationDb;Username=123;Password=123
+      - RabbitMQ__Host=messagebroker      
+      - RabbitMQ__Username=123
+      - RabbitMQ__Password=123
+    ports:
+      - "5001:8080"
+  
+  notification.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5002:8080"
+
+  reporting.api:
+    depends_on:
+      - messagebroker
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQ__Host=messagebroker
+      - RabbitMQ__Username=123
+      - RabbitMQ__Password=123
+    ports:
+      - "5003:8080"
+
+  scheduler.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5004:8080"
+  
+  user.api:
+    depends_on:
+      - userdb
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=Host=userdb;Port=5432;Database=UserDb;Username=123;Password=123
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+    ports:
+      - "5005:8080"

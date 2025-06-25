@@ -1,0 +1,52 @@
+services:
+  escalationdb:
+    image: postgres
+    
+  userdb:
+    image: postgres
+    
+  messagebroker:
+    image: rabbitmq:management
+      
+  escalation.api:
+    image: escalationapi
+    build:
+      context: .
+      dockerfile: EscalationService/EscalationService.API/Dockerfile
+      
+  notification.api:
+    image: notificationapi
+    build:
+      context: .
+      dockerfile: NotificationService/NotificationService.API/Dockerfile
+  
+  reporting.api:
+    image: reportingapi
+    build:
+      context: .
+      dockerfile: ReportingService/ReportingService.API/Dockerfile   
+      
+  scheduler.api:
+    image: schedulerapi
+    build:
+      context: .
+      dockerfile: SchedulerService/SchedulerService.API/Dockerfile
+      
+  user.api:
+    image: userapi
+    build:
+      context: .
+      dockerfile: UserService/UserService.API/Dockerfile
+      
+volumes:
+  escalation_data:
+  user_data:
+      
+  
+  
+      
+      
+      
+      
+    
+  
