@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  escalation.api:
+    image: escalationapi
+    build:
+      context: .
+      dockerfile: EscalationService/EscalationService.API/Dockerfile
+    ports:
+      - "5001:8080"
+      
+  notification.api:
+    image: notificationapi
+    build:
+      context: .
+      dockerfile: NotificationService/NotificationService.API/Dockerfile
+    ports:
+      - "5002:8080"
+  
+  reporting.api:
+    image: reportingapi
+    build:
+      context: .
+      dockerfile: ReportingService/ReportingService.API/Dockerfile   
+    ports:
+      - "5003:8080"
+      
+  scheduler.api:
+    image: schedulerapi
+    build:
+      context: .
+      dockerfile: SchedulerService/SchedulerService.API/Dockerfile
+    ports:
+      - "5004:8080"
+      
+  user.api:
+    image: userapi
+    build:
+      context: .
+      dockerfile: UserService/UserService.API/Dockerfile
+    ports:
+      - "5005:8080"
+      
+  
+  
+      
+      
+      
+      
+    
+  
