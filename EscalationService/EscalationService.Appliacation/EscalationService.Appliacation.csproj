@@ -6,4 +6,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\Common\QueryParams\QueryParams.csproj" />
+      <ProjectReference Include="..\EscalationService.Domain\EscalationService.Domain.csproj" />
+    </ItemGroup>
+
 </Project>
