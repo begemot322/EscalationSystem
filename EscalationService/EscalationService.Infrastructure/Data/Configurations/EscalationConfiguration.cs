@@ -1,4 +1,5 @@
 using EscalationService.Domain.Entities;
+using EscalationService.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,10 +17,9 @@ public class EscalationConfiguration : IEntityTypeConfiguration<Escalation>
         
         builder.Property(e => e.Description)
             .HasMaxLength(1000);
-        
+
         builder.Property(e => e.Status)
-            .IsRequired()
-            .HasConversion<string>();   
+            .IsRequired();
         
         builder.Property(e => e.CreatedAt)
             .IsRequired();

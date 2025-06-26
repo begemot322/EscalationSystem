@@ -1,4 +1,4 @@
-namespace QueryParams;
+namespace Models.QueryParams;
 
 public class PageParams
 {

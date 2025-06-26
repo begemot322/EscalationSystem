@@ -16,8 +16,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Common\QueryParams\QueryParams.csproj" />
-      <ProjectReference Include="..\..\QueryParams\QueryParams.csproj" />
       <ProjectReference Include="..\EscalationService.Appliacation\EscalationService.Appliacation.csproj" />
       <ProjectReference Include="..\EscalationService.Domain\EscalationService.Domain.csproj" />
     </ItemGroup>
