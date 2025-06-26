@@ -1,4 +1,6 @@
+using EscalationService.Appliacation.Common.Interfaces.Repositories;
 using EscalationService.Appliacation.DTOs;
+using EscalationService.Appliacation.Services.Implementation;
 using EscalationService.Appliacation.Services.Interfaces;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,8 +12,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services
-            .AddServices()
-            .AddValidation();
+            .AddServices();
 
         return services;
     }
@@ -19,14 +20,13 @@ public static class DependencyInjection
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<IEscalationService, Services.Implementation.EscalationService>();
+        services.AddScoped<ICriteriaService, CriteriaService>();
         
-        return services;
-    }
-
-    private static IServiceCollection AddValidation(this IServiceCollection services)
-    {
+        
+        //Validation
         services.AddValidatorsFromAssemblyContaining<EscalationDto>();
         
         return services;
     }
+    
 }
