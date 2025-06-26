@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 using EscalationService.Appliacation.Filters;
 using EscalationService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using QueryParams;
+using Models.QueryParams;
 
 namespace EscalationService.Infrastructure.Extensions;
 

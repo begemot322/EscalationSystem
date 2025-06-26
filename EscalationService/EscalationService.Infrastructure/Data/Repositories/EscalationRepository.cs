@@ -3,7 +3,7 @@ using EscalationService.Appliacation.Filters;
 using EscalationService.Domain.Entities;
 using EscalationService.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
-using QueryParams;
+using Models.QueryParams;
 
 namespace EscalationService.Infrastructure.Data.Repositories;
 
