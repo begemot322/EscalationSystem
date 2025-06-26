@@ -26,8 +26,8 @@ public static class DependencyInjection
             options.UseNpgsql(connString));
         
         //Репозитории
-
         services.AddScoped<IEscalationRepository, EscalationRepository>();
+        services.AddScoped<ICriteriaRepository, CriteriaRepository>();
         
         return services;
     }
