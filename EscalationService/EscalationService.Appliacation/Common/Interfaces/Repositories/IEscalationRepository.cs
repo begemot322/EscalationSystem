@@ -1,6 +1,6 @@
 using EscalationService.Appliacation.Filters;
 using EscalationService.Domain.Entities;
-using QueryParams;
+using Models.QueryParams;
 
 namespace EscalationService.Appliacation.Common.Interfaces.Repositories;
 
