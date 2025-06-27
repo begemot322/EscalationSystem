@@ -28,6 +28,7 @@ public static class DependencyInjection
         //Репозитории
         services.AddScoped<IEscalationRepository, EscalationRepository>();
         services.AddScoped<ICriteriaRepository, CriteriaRepository>();
+        services.AddScoped<ICommentRepository, CommentRepository>();
         
         return services;
     }
