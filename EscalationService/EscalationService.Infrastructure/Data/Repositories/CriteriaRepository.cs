@@ -11,6 +11,7 @@ public class CriteriaRepository(ApplicationDbContext db) : ICriteriaRepository
     public async Task<List<Criteria>> GetByEscalationIdAsync(int escalationId)
     {
         return await _db.Criterias
+            .AsNoTracking()
             .Where(c => c.EscalationId == escalationId)
             .OrderBy(c => c.Order)
             .ToListAsync();
@@ -19,6 +20,7 @@ public class CriteriaRepository(ApplicationDbContext db) : ICriteriaRepository
     public async Task<int> CountByEscalationIdAsync(int escalationId)
     {
         return await _db.Criterias
+            .AsNoTracking()
             .CountAsync(c => c.EscalationId == escalationId);
     }
 
@@ -47,6 +49,8 @@ public class CriteriaRepository(ApplicationDbContext db) : ICriteriaRepository
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _db.Criterias.AnyAsync(e => e.Id == id);
+        return await _db.Criterias
+            .AsNoTracking()
+            .AnyAsync(e => e.Id == id);
     }
 }
