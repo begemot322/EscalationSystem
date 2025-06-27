@@ -44,6 +44,8 @@ public class EscalationRepository(ApplicationDbContext db) : IEscalationReposito
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _db.Escalations.AnyAsync(e => e.Id == id);
+        return await _db.Escalations
+            .AsNoTracking()
+            .AnyAsync(e => e.Id == id);
     }
 }
