@@ -1,3 +1,4 @@
+using AutoMapper;
 using EscalationService.Appliacation.Common.Interfaces.Repositories;
 using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.Services.Interfaces;
@@ -10,33 +11,35 @@ namespace EscalationService.Appliacation.Services.Implementation;
 public class CommentService(
     ICommentRepository commentRepository,
     IEscalationRepository escalationRepository,
-    IValidator<CommentDto> validator) : ICommentService
+    IValidator<CommentDto> validator,
+    IMapper mapper) : ICommentService
 {
     private readonly ICommentRepository _commentRepository = commentRepository;
     private readonly IEscalationRepository _escalationRepository = escalationRepository;
     private readonly IValidator<CommentDto> _validator = validator;
+    private readonly IMapper _mapper = mapper;
 
-    public async Task<Result<List<Comment>>> GetByEscalationIdAsync(int escalationId)
+    public async Task<Result<IEnumerable<Comment>>> GetByEscalationIdAsync(int escalationId)
     {
         if (escalationId <= 0)
-            return Result<List<Comment>>.Failure(Error.ValidationFailed("Escalation ID must be a positive number"));
+            return Result<IEnumerable<Comment>>.Failure(Error.ValidationFailed("Escalation ID must be a positive number"));
         
         var exists = await _escalationRepository.ExistsAsync(escalationId);
         if (!exists)
-            return Result<List<Comment>>.Failure(Error.NotFound<Escalation>(escalationId));
+            return Result<IEnumerable<Comment>>.Failure(Error.NotFound<Escalation>(escalationId));
         
         var comments = await _commentRepository.GetByEscalationIdAsync(escalationId);
-        return Result<List<Comment>>.Success(comments);
+        return Result<IEnumerable<Comment>>.Success(comments);
     }
 
     
-    public async Task<Result<List<Comment>>> GetByUserIdAsync(int userId)
+    public async Task<Result<IEnumerable<Comment>>> GetByUserIdAsync(int userId)
     {
         if (userId <= 0)
-            return Result<List<Comment>>.Failure(Error.ValidationFailed("Escalation ID must be a positive number"));
+            return Result<IEnumerable<Comment>>.Failure(Error.ValidationFailed("Escalation ID must be a positive number"));
 
         var comments = await _commentRepository.GetByUserIdAsync(userId);
-        return Result<List<Comment>>.Success(comments);
+        return Result<IEnumerable<Comment>>.Success(comments);
     }
     
     public async Task<Result<Comment>> CreateAsync(CommentDto dto, int escalationId, int userId)
@@ -52,12 +55,9 @@ public class CommentService(
         if (escalation is null)
             return Result<Comment>.Failure(Error.NotFound<Escalation>(escalationId));
 
-        var comment = new Comment
-        {
-            Text = dto.Text,
-            EscalationId = escalationId,
-            UserId = userId
-        };
+        var comment = _mapper.Map<Comment>(dto);
+        comment.EscalationId = escalationId;
+        comment.UserId = userId;
 
         await _commentRepository.AddAsync(comment);
         return Result<Comment>.Success(comment);

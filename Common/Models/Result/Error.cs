@@ -19,8 +19,9 @@ public class Error
     public static Error NotFound<T>(int id)
         => new(ErrorType.NotFound, "not_found", $"{typeof(T).Name} with ID '{id}' not found");
 
-    public static Error Duplicate<T>(int id)
-        => new(ErrorType.Conflict, "duplicate", $"{typeof(T).Name} with ID '{id}' already exists");
+    public static Error Duplicate(string fieldName, string value)
+        => new(ErrorType.Conflict, "duplicate", 
+            $"{fieldName} '{value}' is already in use");
 
     public static Error Unauthorized(string? message = null)
         => new(ErrorType.AccessUnAuthorized, "unauthorized", message ?? "Access denied");

@@ -1,3 +1,4 @@
+using AutoMapper;
 using EscalationService.Appliacation.Common.Interfaces.Repositories;
 using EscalationService.Appliacation.DTOs.Criteria;
 using EscalationService.Appliacation.Services.Interfaces;
@@ -11,18 +12,20 @@ public class CriteriaService(
     ICriteriaRepository repository,
     IEscalationRepository escalationRepository,
     IValidator<CreateCriteriaDto> createValidator,
-    IValidator<UpdateCriteriaDto> updateValidator) : ICriteriaService
+    IValidator<UpdateCriteriaDto> updateValidator,
+    IMapper mapper) : ICriteriaService
 {
     private readonly ICriteriaRepository _repository = repository;
     private readonly IEscalationRepository _escalationRepository = escalationRepository;
     private readonly IValidator<CreateCriteriaDto> _createValidator = createValidator;
     private readonly IValidator<UpdateCriteriaDto> _updateValidator = updateValidator;
+    private readonly IMapper _mapper = mapper;
     
-    public async Task<Result<List<Criteria>>> GetByEscalationIdAsync(int escalationId)
+    public async Task<Result<IEnumerable<Criteria>>> GetByEscalationIdAsync(int escalationId)
     {      
         if (escalationId <= 0)
         {
-            return Result<List<Criteria>>.Failure(
+            return Result<IEnumerable<Criteria>>.Failure(
                 Error.ValidationFailed("Escalation ID must be a positive number"));
         }
         
@@ -30,12 +33,12 @@ public class CriteriaService(
         
         if (!escalationExists)
         {
-            return Result<List<Criteria>>.Failure(
+            return Result<IEnumerable<Criteria>>.Failure(
                 Error.NotFound<Escalation>(escalationId));
         }
         
         var list = await _repository.GetByEscalationIdAsync(escalationId);
-        return Result<List<Criteria>>.Success(list);
+        return Result<IEnumerable<Criteria>>.Success(list);
     }
     
     // Пока буду айди автора принимать в запросе, когда сделаю аунтефикацию то буду из jwt брать
@@ -57,13 +60,10 @@ public class CriteriaService(
         
         var order = await _repository.CountByEscalationIdAsync(escalationId) + 1;  // +1 так как не хочу чтобы с 0 начиналось
         
-        var criteria = new Criteria
-        {
-            Description = dto.Description,
-            Order = order,
-            IsCompleted = false,
-            EscalationId = escalationId
-        };
+        var criteria = _mapper.Map<Criteria>(dto);
+        criteria.Order = order;
+        criteria.EscalationId = escalationId;
+        criteria.IsCompleted = false;
         
         await _repository.AddAsync(criteria);
         return Result<Criteria>.Success(criteria);
@@ -93,9 +93,7 @@ public class CriteriaService(
         if (escalation.AuthorId != authorId)
             return Result<Criteria>.Failure(Error.Forbidden("Only the author can update criteria"));
 
-        criteria.Description = dto.Description;
-        criteria.IsCompleted = dto.IsCompleted;
-        criteria.Order = dto.Order;
+        _mapper.Map(dto, criteria);
         
         await _repository.UpdateAsync(criteria);
         return Result<Criteria>.Success(criteria);

@@ -4,7 +4,7 @@ namespace EscalationService.Appliacation.Common.Interfaces.Repositories;
 
 public interface ICriteriaRepository
 {
-    Task<List<Criteria>> GetByEscalationIdAsync(int escalationId);
+    Task<IEnumerable<Criteria>> GetByEscalationIdAsync(int escalationId);
     Task<int> CountByEscalationIdAsync(int escalationId);
     Task<Criteria?> GetByIdAsync(int id);
     Task AddAsync(Criteria criteria);

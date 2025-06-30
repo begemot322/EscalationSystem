@@ -23,10 +23,12 @@ public static class DependencyInjection
         services.AddScoped<ICriteriaService, CriteriaService>();
         services.AddScoped<ICommentService, CommentService>();
         
-        
         //Validation
         services.AddValidatorsFromAssemblyContaining<EscalationDto>();
         
+        //Automapper
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
         return services;
     }
     

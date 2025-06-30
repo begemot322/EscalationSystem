@@ -8,7 +8,7 @@ public class CriteriaRepository(ApplicationDbContext db) : ICriteriaRepository
 {
     private readonly ApplicationDbContext _db = db;
     
-    public async Task<List<Criteria>> GetByEscalationIdAsync(int escalationId)
+    public async Task<IEnumerable<Criteria>> GetByEscalationIdAsync(int escalationId)
     {
         return await _db.Criterias
             .AsNoTracking()
