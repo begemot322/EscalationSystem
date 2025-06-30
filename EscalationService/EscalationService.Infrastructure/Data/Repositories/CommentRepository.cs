@@ -8,7 +8,7 @@ public class CommentRepository(ApplicationDbContext db) : ICommentRepository
 {
     private readonly ApplicationDbContext _db = db;
 
-    public async Task<List<Comment>> GetByEscalationIdAsync(int escalationId)
+    public async Task<IEnumerable<Comment>> GetByEscalationIdAsync(int escalationId)
     {
         return await _db.Comments
             .AsNoTracking()
@@ -16,7 +16,7 @@ public class CommentRepository(ApplicationDbContext db) : ICommentRepository
             .ToListAsync();
     }
 
-    public async Task<List<Comment>> GetByUserIdAsync(int userId)
+    public async Task<IEnumerable<Comment>> GetByUserIdAsync(int userId)
     {
         return await _db.Comments
             .AsNoTracking()
