@@ -9,12 +9,25 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.1" />
     </ItemGroup>
 
     <ItemGroup>
       <Content Include="..\..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\UserService.Application\UserService.Application.csproj" />
+      <ProjectReference Include="..\UserService.Infrastructure\UserService.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>
