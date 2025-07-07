@@ -1,6 +1,8 @@
 using EscalationService.API;
 using EscalationService.Appliacation;
+using EscalationService.Appliacation.Common.Interfaces;
 using EscalationService.Infrastructure;
+using EscalationService.Infrastructure.MessageBus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +21,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var publisher = scope.ServiceProvider.GetRequiredService<IMessageBusPublisher>() as RabbitMqPublisher;
+    if (publisher != null)
+        await publisher.InitializeAsync();
+}
 
 app.Run();
