@@ -3,6 +3,8 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Models;
+using Models.Options;
 using UserService.Application.Common.Identity;
 using UserService.Domain;
 
@@ -17,6 +19,7 @@ public class JwtProvider(IOptions<JwtOptions> options) : IJwtProvider
         Claim[] claims =
         {
             new Claim("userId", user.Id.ToString()),
+            new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 
         var signingCredentials = new SigningCredentials(
