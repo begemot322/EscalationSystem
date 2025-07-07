@@ -31,8 +31,8 @@ public static class DependencyInjection
         
         // Rabbit
         services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
-        services.AddSingleton<IMessageBusPublisher, RabbitMqPublisher>();
-        services.AddHostedService<RabbitMqConsumer>();
+        services.AddSingleton<IMessageBusPublisher, UserIdsPublisher>();
+        services.AddHostedService<EscalationReportConsumer>();
 
         services.AddData(configuration); 
         services.AddAuth(configuration);
@@ -52,7 +52,9 @@ public static class DependencyInjection
         services.AddScoped<IEscalationRepository, EscalationRepository>();
         services.AddScoped<ICriteriaRepository, CriteriaRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
-        services.AddScoped<IEscalationUserRepository, EscalationUserRepository>(); 
+        services.AddScoped<IEscalationUserRepository, EscalationUserRepository>();
+
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         return services;
     }
