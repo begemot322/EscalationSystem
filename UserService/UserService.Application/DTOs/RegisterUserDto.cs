@@ -1,3 +1,5 @@
+using UserService.Domain;
+
 namespace UserService.Application.DTOs;
 
 public record RegisterUserDto(
@@ -5,4 +7,5 @@ public record RegisterUserDto(
     string LastName,
     string Email,
     string? PhoneNumber,
-    string Password);
+    string Password,
+    UserRole Role);
