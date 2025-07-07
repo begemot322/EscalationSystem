@@ -166,15 +166,9 @@ public class EscalationService(
         EscalationStatus? status = null)
     {
         var escalations = await _unitOfWork.Escalations.GetFilteredEscalationsAsync(fromDate, toDate, status);
-        var dtos = escalations.Select(e => new EscalationDtoMessage
-        {
-            Name = e.Name,
-            Description = e.Description,
-            Status = e.Status,
-            CreatedAt = e.CreatedAt,
-            UpdatedAt = e.UpdatedAt
-        }).ToList();        
-        return Result<List<EscalationDtoMessage>>.Success(dtos);
+        var escalationDtoMessages = _mapper.Map<List<EscalationDtoMessage>>(escalations);
+        
+        return Result<List<EscalationDtoMessage>>.Success(escalationDtoMessages);
     }
     
     private bool CanCreateEscalation()
