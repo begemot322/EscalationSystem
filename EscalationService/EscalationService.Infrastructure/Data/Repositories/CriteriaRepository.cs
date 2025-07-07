@@ -32,19 +32,16 @@ public class CriteriaRepository(ApplicationDbContext db) : ICriteriaRepository
     public async Task AddAsync(Criteria criteria)
     {
         await _db.Criterias.AddAsync(criteria);
-        await _db.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Criteria criteria)
     {
         _db.Criterias.Update(criteria);
-        await _db.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Criteria criteria)
     {
         _db.Criterias.Remove(criteria);
-        await _db.SaveChangesAsync();
     }
 
     public async Task<bool> ExistsAsync(int id)
