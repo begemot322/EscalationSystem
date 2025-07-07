@@ -53,11 +53,4 @@ public class AuthController : BaseController
         
         return Ok(new { Message = "Logged out successfully" });
     }
-
-    [HttpGet]
-    public async Task<IActionResult> GetUser()
-    {
-        var users = await _db.Users.ToListAsync();
-        return Ok(users);
-    }
 }
