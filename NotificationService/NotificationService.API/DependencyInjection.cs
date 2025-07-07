@@ -19,7 +19,7 @@ public static class DependencyInjection
         services.Configure<GmailOptions>(configuration.GetSection("GmailOptions"));
         
         // Rabbit
-        services.AddHostedService<RabbitMqConsumer>();
+        services.AddHostedService<UserNotificationConsumer>();
         // Gmail
         services.AddSingleton<IEmailService, GmailService>();
 
