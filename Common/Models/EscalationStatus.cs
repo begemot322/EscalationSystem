@@ -1,4 +1,4 @@
-﻿namespace EscalationService.Domain.Enums;
+namespace Models;
 
 public enum EscalationStatus
 {
