@@ -18,7 +18,8 @@ public class EscalationDtoValidator : AbstractValidator<EscalationDto>
         RuleFor(x => x.Status)
             .IsInEnum().WithMessage("Некорректный статус эскалации");
 
-        RuleFor(x => x.AuthorId)
-            .GreaterThan(0).WithMessage("ID автора должно быть положительным числом");
+        RuleFor(x => x.ResponsibleUserIds)
+            .NotEmpty().WithMessage("Не может быть ни одного ответственного");
+
     }
 }

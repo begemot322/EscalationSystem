@@ -1,9 +1,9 @@
-using EscalationService.Domain.Enums;
+using Models;
 
 namespace EscalationService.Appliacation.DTOs;
 
 public record EscalationDto(
     string Name,
     string Description,
-    int AuthorId,         
+    List<int> ResponsibleUserIds,
     EscalationStatus Status = EscalationStatus.New);
