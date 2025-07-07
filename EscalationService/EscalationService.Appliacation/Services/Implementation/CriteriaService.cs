@@ -10,15 +10,13 @@ using Models.Result;
 namespace EscalationService.Appliacation.Services.Implementation;
 
 public class CriteriaService(
-    ICriteriaRepository repository,
-    IEscalationRepository escalationRepository,
+    IUnitOfWork unitOfWork,
     IValidator<CreateCriteriaDto> createValidator,
     IValidator<UpdateCriteriaDto> updateValidator,
     IUserContext userContext,
     IMapper mapper) : ICriteriaService
 {
-    private readonly ICriteriaRepository _repository = repository;
-    private readonly IEscalationRepository _escalationRepository = escalationRepository;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IValidator<CreateCriteriaDto> _createValidator = createValidator;
     private readonly IValidator<UpdateCriteriaDto> _updateValidator = updateValidator;
     private readonly IMapper _mapper = mapper;
@@ -32,7 +30,7 @@ public class CriteriaService(
                 Error.ValidationFailed("Escalation ID must be a positive number"));
         }
         
-        var escalationExists = await _escalationRepository.ExistsAsync(escalationId);
+        var escalationExists = await _unitOfWork.Escalations.ExistsAsync(escalationId);
         
         if (!escalationExists)
         {
@@ -40,8 +38,8 @@ public class CriteriaService(
                 Error.NotFound<Escalation>(escalationId));
         }
         
-        var list = await _repository.GetByEscalationIdAsync(escalationId);
-        return Result<IEnumerable<Criteria>>.Success(list);
+        var criterias = await _unitOfWork.Criterias.GetByEscalationIdAsync(escalationId);
+        return Result<IEnumerable<Criteria>>.Success(criterias);
     }
     
     public async Task<Result<Criteria>> CreateAsync(int escalationId, CreateCriteriaDto dto)
@@ -53,14 +51,14 @@ public class CriteriaService(
                 Error.ValidationFailed(string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))));
         }
         
-        var escalation = await _escalationRepository.GetByIdAsync(escalationId);
+        var escalation = await _unitOfWork.Escalations.GetByIdAsync(escalationId);
         if (escalation is null)
             return Result<Criteria>.Failure(Error.NotFound<Escalation>(escalationId));
         
         if (!CanModifyEscalation(escalation))
             return Result<Criteria>.Failure(Error.Forbidden("No permissions to modify this escalation"));
         
-        var order = await _repository.CountByEscalationIdAsync(escalationId) + 1; 
+        var order = await _unitOfWork.Criterias.CountByEscalationIdAsync(escalationId) + 1; 
         
         var criteria = _mapper.Map<Criteria>(dto, opt => opt.AfterMap((src, dest) => 
         {
@@ -69,7 +67,9 @@ public class CriteriaService(
             dest.IsCompleted = false;
         }));
         
-        await _repository.AddAsync(criteria);
+        await _unitOfWork.Criterias.AddAsync(criteria);
+        await _unitOfWork.SaveChangesAsync();
+        
         return Result<Criteria>.Success(criteria);
     }
 
@@ -85,11 +85,11 @@ public class CriteriaService(
                 Error.ValidationFailed(string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))));
         }
         
-        var criteria = await _repository.GetByIdAsync(id);
+        var criteria = await _unitOfWork.Criterias.GetByIdAsync(id);
         if (criteria is null)
             return Result<Criteria>.Failure(Error.NotFound<Criteria>(id));
         
-        var escalation = await _escalationRepository.GetByIdAsync(criteria.EscalationId);
+        var escalation = await _unitOfWork.Escalations.GetByIdAsync(criteria.EscalationId);
         if (escalation is null)
             return Result<Criteria>.Failure(Error.NotFound<Escalation>(criteria.EscalationId));
         
@@ -98,7 +98,9 @@ public class CriteriaService(
 
         _mapper.Map(dto, criteria);
         
-        await _repository.UpdateAsync(criteria);
+        await _unitOfWork.Criterias.UpdateAsync(criteria);
+        await _unitOfWork.SaveChangesAsync();
+        
         return Result<Criteria>.Success(criteria);
     }
 
@@ -107,18 +109,20 @@ public class CriteriaService(
         if (id <= 0)
             return Result<Criteria>.Failure(Error.ValidationFailed("Criteria ID must be a positive number"));
         
-        var criteria = await _repository.GetByIdAsync(id);
+        var criteria = await _unitOfWork.Criterias.GetByIdAsync(id);
         if (criteria is null)
             return Result.Failure(Error.NotFound<Criteria>(id));
         
-        var escalation = await _escalationRepository.GetByIdAsync(criteria.EscalationId);
+        var escalation = await _unitOfWork.Escalations.GetByIdAsync(criteria.EscalationId);
         if (escalation is null)
             return Result.Failure(Error.NotFound<Escalation>(criteria.EscalationId));
         
         if (!CanModifyEscalation(escalation))
             return Result<Criteria>.Failure(Error.Forbidden("No permissions to modify this escalation"));
         
-        await _repository.DeleteAsync(criteria);
+        await _unitOfWork.Criterias.DeleteAsync(criteria);
+        await _unitOfWork.SaveChangesAsync();
+        
         return Result.Success();
     }
     

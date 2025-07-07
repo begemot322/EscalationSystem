@@ -16,13 +16,11 @@ public class EscalationUserRepository : IEscalationUserRepository
     public async Task AddAsync(EscalationUser escalationUser)
     {
         await _db.EscalationUsers.AddAsync(escalationUser);
-        await _db.SaveChangesAsync();
     }
 
     public async Task AddRangeAsync(IEnumerable<EscalationUser> escalationUsers)
     {
         await _db.EscalationUsers.AddRangeAsync(escalationUsers);
-        await _db.SaveChangesAsync();
     }
 
     public async Task DeleteByEscalationIdAsync(int escalationId)
@@ -32,6 +30,5 @@ public class EscalationUserRepository : IEscalationUserRepository
             .ToListAsync();
 
         _db.EscalationUsers.RemoveRange(entities);
-        await _db.SaveChangesAsync();
     }
 }

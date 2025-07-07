@@ -1,6 +1,6 @@
 namespace Models.DTOs;
 
-public class EscalationDto
+public class EscalationDtoMessage
 {
     public string Name { get; set; }
     public string Description { get; set; }

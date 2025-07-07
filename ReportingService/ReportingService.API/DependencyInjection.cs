@@ -16,7 +16,7 @@ public static class DependencyInjection
         
         // Configure
         services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
-        services.AddSingleton<IMessageBusPublisher, RabbitMqPublisher>();
+        services.AddSingleton<IMessageBusPublisher, ReportPublisher>();
         
         // servise
         services.AddScoped<ReportService>();

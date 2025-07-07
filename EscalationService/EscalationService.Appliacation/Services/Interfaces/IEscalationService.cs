@@ -2,6 +2,7 @@ using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.Filters;
 using EscalationService.Domain.Entities;
 using Models;
+using Models.DTOs;
 using Models.QueryParams;
 using Models.Result;
 
@@ -19,7 +20,7 @@ public interface IEscalationService
     Task<Result<Escalation>> UpdateEscalationAsync(int id, EscalationDto dto);
     Task<Result> DeleteEscalationAsync(int id);
 
-    public Task<Result<List<Models.DTOs.EscalationDto>>> GetFilteredEscalationsAsync(
+    public Task<Result<List<EscalationDtoMessage>>> GetFilteredEscalationsAsync(
         DateTime? fromDate = null,
         DateTime? toDate = null,
         EscalationStatus? status = null);

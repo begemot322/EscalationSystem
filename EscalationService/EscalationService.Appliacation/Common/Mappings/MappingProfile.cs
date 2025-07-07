@@ -2,6 +2,7 @@ using AutoMapper;
 using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.DTOs.Criteria;
 using EscalationService.Domain.Entities;
+using Models.DTOs;
 
 namespace EscalationService.Appliacation.Common.Mappings;
 
@@ -15,6 +16,6 @@ public class MappingProfile : Profile
         
         CreateMap<CreateCriteriaDto, Criteria>();
         CreateMap<UpdateCriteriaDto, Criteria>();
-        CreateMap<Escalation, Models.DTOs.EscalationDto>().ReverseMap();
+        CreateMap<EscalationDtoMessage, Escalation>().ReverseMap();
     }
 }
