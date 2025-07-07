@@ -1,4 +1,4 @@
-﻿using EscalationService.Domain.Enums;
+﻿using Models;
 
 namespace EscalationService.Domain.Entities;
 
