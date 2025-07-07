@@ -9,7 +9,7 @@ using RabbitMQ.Client;
 
 namespace EscalationService.Infrastructure.MessageBus;
 
-public class RabbitMqPublisher : IMessageBusPublisher, IAsyncDisposable
+public class UserIdsPublisher : IMessageBusPublisher, IAsyncDisposable
 {
     private readonly RabbitMqOptions _rabbitMqOptions;
     private readonly IConnection _connection;
@@ -17,7 +17,7 @@ public class RabbitMqPublisher : IMessageBusPublisher, IAsyncDisposable
     private const string QueueName = "user_ids_queue";
 
     
-    public RabbitMqPublisher(IOptions<RabbitMqOptions> options)
+    public UserIdsPublisher(IOptions<RabbitMqOptions> options)
     {
         _rabbitMqOptions = options.Value;
         var factory = new ConnectionFactory

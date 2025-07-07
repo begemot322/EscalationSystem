@@ -9,7 +9,7 @@ using RabbitMQ.Client.Events;
 
 namespace NotificationService.API.MessageBus;
 
-public class RabbitMqConsumer : BackgroundService
+public class UserNotificationConsumer : BackgroundService
 {
     private readonly IConnection _connection;
     private readonly IChannel _channel;
@@ -19,7 +19,7 @@ public class RabbitMqConsumer : BackgroundService
     private const string QueueName = "user_ids_queue";
 
     
-    public RabbitMqConsumer(
+    public UserNotificationConsumer(
         IOptions<RabbitMqOptions> options,
         IEmailService emailService,
         IUserServiceClient userServiceClient)
