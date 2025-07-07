@@ -42,15 +42,20 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Database=Host=escalationdb;Port=5432;Database=EscalationDb;Username=123;Password=123
-      - RabbitMQ__Host=messagebroker      
+      - RabbitMQ__HostName=messagebroker      
       - RabbitMQ__Username=123
       - RabbitMQ__Password=123
     ports:
       - "5001:8080"
   
   notification.api:
+    depends_on:
+      - messagebroker
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQ__HostName=messagebroker
+      - RabbitMQ__Username=123
+      - RabbitMQ__Password=123
     ports:
       - "5002:8080"
 
@@ -59,7 +64,7 @@ services:
       - messagebroker
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - RabbitMQ__Host=messagebroker
+      - RabbitMQ__HostName=messagebroker
       - RabbitMQ__Username=123
       - RabbitMQ__Password=123
     ports:
@@ -77,6 +82,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Database=Host=userdb;Port=5432;Database=UserDb;Username=123;Password=123
+      - RabbitMQ__HostName=messagebroker
+      - RabbitMQ__Username=123
+      - RabbitMQ__Password=123
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
     ports:

@@ -41,12 +41,3 @@ services:
 volumes:
   escalation_data:
   user_data:
-      
-  
-  
-      
-      
-      
-      
-    
-  
