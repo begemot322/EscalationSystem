@@ -1,4 +1,5 @@
 using AutoMapper;
+using EscalationService.Appliacation.Common.Interfaces;
 using EscalationService.Appliacation.Common.Interfaces.Repositories;
 using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.Services.Interfaces;
@@ -12,12 +13,14 @@ public class CommentService(
     ICommentRepository commentRepository,
     IEscalationRepository escalationRepository,
     IValidator<CommentDto> validator,
+    IUserContext userContext,
     IMapper mapper) : ICommentService
 {
     private readonly ICommentRepository _commentRepository = commentRepository;
     private readonly IEscalationRepository _escalationRepository = escalationRepository;
     private readonly IValidator<CommentDto> _validator = validator;
     private readonly IMapper _mapper = mapper;
+    private readonly IUserContext _userContext = userContext;
 
     public async Task<Result<IEnumerable<Comment>>> GetByEscalationIdAsync(int escalationId)
     {
@@ -42,15 +45,16 @@ public class CommentService(
         return Result<IEnumerable<Comment>>.Success(comments);
     }
     
-    public async Task<Result<Comment>> CreateAsync(CommentDto dto, int escalationId, int userId)
+    public async Task<Result<Comment>> CreateAsync(CommentDto dto, int escalationId)
     {
         var validation = await _validator.ValidateAsync(dto);
         
         if (!validation.IsValid)
             return Result<Comment>.Failure(
                 Error.ValidationFailed(string.Join(", ", validation.Errors.Select(e => e.ErrorMessage))));
-
-
+        
+        var userId = _userContext.GetUserId(); 
+        
         var escalation = await _escalationRepository.GetByIdAsync(escalationId);
         if (escalation is null)
             return Result<Comment>.Failure(Error.NotFound<Escalation>(escalationId));
@@ -63,7 +67,7 @@ public class CommentService(
         return Result<Comment>.Success(comment);
     }
 
-    public async Task<Result<Comment>> UpdateAsync(int commentId, CommentDto dto, int userId)
+    public async Task<Result<Comment>> UpdateAsync(int commentId, CommentDto dto)
     {
         if (commentId <= 0)
             return Result<Comment>.Failure(Error.ValidationFailed("Comment ID must be a positive number"));
@@ -77,20 +81,19 @@ public class CommentService(
         if (comment is null)
             return Result<Comment>.Failure(Error.NotFound<Comment>(commentId));
         
-        var escalation = await _escalationRepository.GetByIdAsync(comment.EscalationId);
-        if (escalation is null)
-            return Result<Comment>.Failure(Error.NotFound<Escalation>(comment.EscalationId));
+        var userId = _userContext.GetUserId();
         
-        if (comment.UserId != userId && escalation.AuthorId != userId)
-            return Result<Comment>.Failure(Error.Forbidden("Only the author or escalation author can update the comment"));
-
+        var userRole = _userContext.GetUserRole(); 
+        if (userRole != "Senior" && comment.UserId != userId)
+            return Result<Comment>.Failure(Error.Forbidden("You can only edit your own comments"));
+        
         comment.Text = dto.Text;
         await _commentRepository.UpdateAsync(comment);
 
         return Result<Comment>.Success(comment);
     }
 
-    public async Task<Result> DeleteAsync(int commentId, int userId)
+    public async Task<Result> DeleteAsync(int commentId)
     {
         if (commentId <= 0)
             return Result.Failure(Error.ValidationFailed("Comment ID must be a positive number"));
@@ -99,12 +102,11 @@ public class CommentService(
         if (comment is null)
             return Result.Failure(Error.NotFound<Comment>(commentId));
         
-        var escalation = await _escalationRepository.GetByIdAsync(comment.EscalationId);
-        if (escalation is null)
-            return Result.Failure(Error.NotFound<Escalation>(comment.EscalationId));
+        var userId = _userContext.GetUserId();
         
-        if (comment.UserId != userId && escalation.AuthorId != userId)
-            return Result.Failure(Error.Forbidden("Only the author or escalation author can delete the comment"));
+        var userRole = _userContext.GetUserRole(); 
+        if (userRole != "Senior" && comment.UserId != userId)
+            return Result.Failure(Error.Forbidden("You can only delete your own comments"));
         
         await _commentRepository.DeleteAsync(comment);
         return Result.Success();

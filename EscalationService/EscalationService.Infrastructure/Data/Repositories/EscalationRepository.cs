@@ -3,6 +3,7 @@ using EscalationService.Appliacation.Filters;
 using EscalationService.Domain.Entities;
 using EscalationService.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Models;
 using Models.QueryParams;
 
 namespace EscalationService.Infrastructure.Data.Repositories;
@@ -47,5 +48,26 @@ public class EscalationRepository(ApplicationDbContext db) : IEscalationReposito
         return await _db.Escalations
             .AsNoTracking()
             .AnyAsync(e => e.Id == id);
+    }
+    
+    public async Task<List<Escalation>> GetFilteredEscalationsAsync(
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
+        EscalationStatus? status = null)
+    {
+        var query = _db.Escalations.AsNoTracking();
+
+        if (fromDate.HasValue)
+            query = query.Where(e => e.CreatedAt >= fromDate.Value);
+
+        if (toDate.HasValue)
+            query = query.Where(e => e.CreatedAt <= toDate.Value);
+
+        if (status.HasValue)
+            query = query.Where(e => e.Status == status.Value);
+
+        return await query
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
     }
 }

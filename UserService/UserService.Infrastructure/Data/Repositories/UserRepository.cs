@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Models;
 using Models.QueryParams;
 using UserService.Application.Common.Interfaces.Repository;
 using UserService.Application.Filters;
@@ -49,6 +50,21 @@ public class UserRepository(ApplicationDbContext db) : IUserRepository
         await _db.SaveChangesAsync();
     }
 
+    public async Task<List<int>> CheckUsersExistAsync(List<int> userIds)
+    {
+        return await _db.Users
+            .Where(u => userIds.Contains(u.Id))
+            .Select(u => u.Id)
+            .ToListAsync();
+    }
+    public async Task<List<User>> GetUsersByIdsAsync(List<int> userIds)
+    {
+        return await _db.Users
+            .Where(u => userIds.Contains(u.Id))
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
     public async Task<bool> ExistsAsync(int id)
     {
         return await _db.Users
@@ -62,4 +78,5 @@ public class UserRepository(ApplicationDbContext db) : IUserRepository
             .AsNoTracking()
             .AnyAsync(u => u.Email == email);
     }
+    
 }

@@ -1,4 +1,5 @@
 using AutoMapper;
+using EscalationService.Appliacation.Common.Interfaces;
 using EscalationService.Appliacation.Common.Interfaces.Repositories;
 using EscalationService.Appliacation.DTOs.Criteria;
 using EscalationService.Appliacation.Services.Interfaces;
@@ -13,6 +14,7 @@ public class CriteriaService(
     IEscalationRepository escalationRepository,
     IValidator<CreateCriteriaDto> createValidator,
     IValidator<UpdateCriteriaDto> updateValidator,
+    IUserContext userContext,
     IMapper mapper) : ICriteriaService
 {
     private readonly ICriteriaRepository _repository = repository;
@@ -20,6 +22,7 @@ public class CriteriaService(
     private readonly IValidator<CreateCriteriaDto> _createValidator = createValidator;
     private readonly IValidator<UpdateCriteriaDto> _updateValidator = updateValidator;
     private readonly IMapper _mapper = mapper;
+    private readonly IUserContext _userContext = userContext;
     
     public async Task<Result<IEnumerable<Criteria>>> GetByEscalationIdAsync(int escalationId)
     {      
@@ -41,8 +44,7 @@ public class CriteriaService(
         return Result<IEnumerable<Criteria>>.Success(list);
     }
     
-    // Пока буду айди автора принимать в запросе, когда сделаю аунтефикацию то буду из jwt брать
-    public async Task<Result<Criteria>> CreateAsync(int escalationId, int authorId, CreateCriteriaDto dto)
+    public async Task<Result<Criteria>> CreateAsync(int escalationId, CreateCriteriaDto dto)
     {
         var validationResult = await _createValidator.ValidateAsync(dto);
         if (!validationResult.IsValid)
@@ -55,22 +57,23 @@ public class CriteriaService(
         if (escalation is null)
             return Result<Criteria>.Failure(Error.NotFound<Escalation>(escalationId));
         
-        if (escalation.AuthorId != authorId)
-            return Result<Criteria>.Failure(Error.Forbidden("Only the author can add criteria"));
+        if (!CanModifyEscalation(escalation))
+            return Result<Criteria>.Failure(Error.Forbidden("No permissions to modify this escalation"));
         
-        var order = await _repository.CountByEscalationIdAsync(escalationId) + 1;  // +1 так как не хочу чтобы с 0 начиналось
+        var order = await _repository.CountByEscalationIdAsync(escalationId) + 1; 
         
-        var criteria = _mapper.Map<Criteria>(dto);
-        criteria.Order = order;
-        criteria.EscalationId = escalationId;
-        criteria.IsCompleted = false;
+        var criteria = _mapper.Map<Criteria>(dto, opt => opt.AfterMap((src, dest) => 
+        {
+            dest.Order = order;
+            dest.EscalationId = escalationId;
+            dest.IsCompleted = false;
+        }));
         
         await _repository.AddAsync(criteria);
         return Result<Criteria>.Success(criteria);
     }
 
-    // тут пока тоже самое
-    public async Task<Result<Criteria>> UpdateAsync(int id, UpdateCriteriaDto dto, int authorId)
+    public async Task<Result<Criteria>> UpdateAsync(int id, UpdateCriteriaDto dto)
     {
         if (id <= 0)
             return Result<Criteria>.Failure(Error.ValidationFailed("Criteria ID must be a positive number"));
@@ -90,8 +93,8 @@ public class CriteriaService(
         if (escalation is null)
             return Result<Criteria>.Failure(Error.NotFound<Escalation>(criteria.EscalationId));
         
-        if (escalation.AuthorId != authorId)
-            return Result<Criteria>.Failure(Error.Forbidden("Only the author can update criteria"));
+        if (!CanModifyEscalation(escalation))
+            return Result<Criteria>.Failure(Error.Forbidden("No permissions to modify this escalation"));
 
         _mapper.Map(dto, criteria);
         
@@ -99,8 +102,7 @@ public class CriteriaService(
         return Result<Criteria>.Success(criteria);
     }
 
-    // и тут пока тоже
-    public async Task<Result> DeleteAsync(int id, int authorId)
+    public async Task<Result> DeleteAsync(int id)
     {
         if (id <= 0)
             return Result<Criteria>.Failure(Error.ValidationFailed("Criteria ID must be a positive number"));
@@ -113,11 +115,19 @@ public class CriteriaService(
         if (escalation is null)
             return Result.Failure(Error.NotFound<Escalation>(criteria.EscalationId));
         
-        if (escalation.AuthorId != authorId)
-            return Result.Failure(Error.Forbidden("Only the author can delete criteria"));
+        if (!CanModifyEscalation(escalation))
+            return Result<Criteria>.Failure(Error.Forbidden("No permissions to modify this escalation"));
         
         await _repository.DeleteAsync(criteria);
         return Result.Success();
+    }
+    
+    private bool CanModifyEscalation(Escalation escalation)
+    {
+        var userRole = _userContext.GetUserRole();
+        var userId = _userContext.GetUserId();
+        
+        return userRole == "Senior" || escalation.AuthorId == userId;
     }
     
 }

@@ -1,5 +1,6 @@
 using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EscalationService.API.Controllers;
@@ -7,6 +8,7 @@ namespace EscalationService.API.Controllers;
 
 [ApiController]
 [Route("api/escalations/{escalationId}/[controller]")]
+[Authorize] 
 public class CommentController : BaseController
 {
     private readonly ICommentService _commentService;
@@ -17,6 +19,7 @@ public class CommentController : BaseController
     }
     
     [HttpGet]
+    [Authorize(Roles = "Junior,Middle,Senior")]
     public async Task<IActionResult> GetByEscalationId(int escalationId)
     {
         var result = await _commentService.GetByEscalationIdAsync(escalationId);
@@ -27,6 +30,7 @@ public class CommentController : BaseController
     }
     
     [HttpGet("user/{userId:int}")]
+    [Authorize(Roles = "Junior,Middle,Senior")]
     public async Task<IActionResult> GetByUserId(int escalationId, int userId)
     {
         var result = await _commentService.GetByUserIdAsync(userId);
@@ -37,9 +41,10 @@ public class CommentController : BaseController
     }
     
     [HttpPost]
-    public async Task<IActionResult> Create(int escalationId, [FromQuery] int userId, [FromBody] CommentDto dto)
+    [Authorize(Roles = "Junior,Middle,Senior")] 
+    public async Task<IActionResult> Create(int escalationId, [FromBody] CommentDto dto)
     {
-        var result = await _commentService.CreateAsync(dto, escalationId, userId);
+        var result = await _commentService.CreateAsync(dto, escalationId);
         if (result.IsSuccess)
             return CreatedAtAction(nameof(GetByEscalationId), new { escalationId }, result.Data);
 
@@ -47,9 +52,10 @@ public class CommentController : BaseController
     }
     
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int escalationId, int id, [FromQuery] int userId, [FromBody] CommentDto dto)
+    [Authorize(Roles = "Junior,Middle,Senior")]
+    public async Task<IActionResult> Update(int id, [FromBody] CommentDto dto)
     {
-        var result = await _commentService.UpdateAsync(id, dto, userId);
+        var result = await _commentService.UpdateAsync(id, dto);
         if (result.IsSuccess)
             return Ok(result.Data);
 
@@ -57,9 +63,10 @@ public class CommentController : BaseController
     }
     
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int escalationId, int id, [FromQuery] int userId)
+    [Authorize(Roles = "Junior,Middle,Senior")]
+    public async Task<IActionResult> Delete(int id)
     {
-        var result = await _commentService.DeleteAsync(id, userId);
+        var result = await _commentService.DeleteAsync(id);
         if (result.IsSuccess)
             return NoContent();
 

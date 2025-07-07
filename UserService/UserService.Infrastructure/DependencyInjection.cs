@@ -7,8 +7,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Models;
+using Models.Options;
 using UserService.Application.Common.Identity;
 using UserService.Application.Common.Interfaces.Repository;
+using UserService.Application.Services.Interfaces;
 using UserService.Infrastructure.Data;
 using UserService.Infrastructure.Data.Repositories;
 using UserService.Infrastructure.Identity;
@@ -22,10 +25,12 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddData(configuration);
+        services.AddServices();
         services.AddAuth(configuration);
 
         return services;
     }
+    
     
     private static IServiceCollection AddData(this IServiceCollection services,
         IConfiguration configuration)
@@ -41,6 +46,13 @@ public static class DependencyInjection
         
         return services;
     }
+    
+    private static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.AddScoped<IUserService, Application.Services.Implementation.UserService>();
+
+        return services;
+    }
 
     private static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
@@ -53,7 +65,8 @@ public static class DependencyInjection
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme; 
+                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultSignOutScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
@@ -81,8 +94,8 @@ public static class DependencyInjection
             {
                 options.Cookie.Name = "SecurityCookies";
                 options.Cookie.HttpOnly = true;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.SlidingExpiration = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             });;
 
         services.AddScoped<IJwtProvider, JwtProvider>();

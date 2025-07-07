@@ -15,5 +15,6 @@ public class MappingProfile : Profile
         
         CreateMap<CreateCriteriaDto, Criteria>();
         CreateMap<UpdateCriteriaDto, Criteria>();
+        CreateMap<Escalation, Models.DTOs.EscalationDto>().ReverseMap();
     }
 }

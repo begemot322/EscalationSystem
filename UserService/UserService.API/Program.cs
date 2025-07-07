@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.Mvc;
 using UserService.API;
 using UserService.Application;
 using UserService.Infrastructure;
@@ -19,6 +20,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCookiePolicy(new CookiePolicyOptions
+{
+    MinimumSameSitePolicy = SameSiteMode.Strict,
+    HttpOnly = HttpOnlyPolicy.Always,
+    Secure = CookieSecurePolicy.Always,
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

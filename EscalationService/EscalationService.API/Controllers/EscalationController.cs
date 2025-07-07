@@ -1,6 +1,7 @@
 using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.Filters;
 using EscalationService.Appliacation.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.QueryParams;
 
@@ -8,6 +9,7 @@ namespace EscalationService.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class EscalationController : BaseController
 {
     private readonly IEscalationService _escalationService;
@@ -18,6 +20,7 @@ public class EscalationController : BaseController
     }
     
     [HttpGet]
+    [Authorize(Roles = "Junior,Middle,Senior")] 
     public async Task<IActionResult> GetAll(
         [FromQuery] EscalationFilter? filter = null,
         [FromQuery] SortParams? sortParams = null,
@@ -31,7 +34,7 @@ public class EscalationController : BaseController
     }
     
     [HttpGet("{id}")]
-    [ActionName("GetById")]
+    [Authorize(Roles = "Junior,Middle,Senior")] 
     public async Task<IActionResult> GetById(int id)
     {
         var result = await _escalationService.GetEscalationByIdAsync(id);
@@ -42,8 +45,10 @@ public class EscalationController : BaseController
     }
     
     [HttpPost]
+    [Authorize(Roles = "Middle,Senior")]
     public async Task<IActionResult> AddEscalation([FromBody] EscalationDto dto)
     {
+        Console.WriteLine("создал эскалацию");
         var result = await _escalationService.CreateEscalationAsync(dto);
         if (result.IsSuccess)
             return CreatedAtAction(nameof(GetById), new { id = result.Data?.Id }, result.Data);
@@ -52,6 +57,7 @@ public class EscalationController : BaseController
     }
     
     [HttpPut("{id:int}")]
+    [Authorize]
     public async Task<IActionResult> Update(int id, [FromBody] EscalationDto dto)
     {
         var result = await _escalationService.UpdateEscalationAsync(id, dto);
@@ -60,8 +66,9 @@ public class EscalationController : BaseController
 
         return Problem(result.Error!);
     }
-    
+ 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Senior")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _escalationService.DeleteEscalationAsync(id);

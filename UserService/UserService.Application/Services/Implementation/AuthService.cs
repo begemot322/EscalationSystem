@@ -43,7 +43,8 @@ public class AuthService(
             LastName = dto.LastName,
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
-            PasswordHash = hashedPassword
+            PasswordHash = hashedPassword,
+            Role = dto.Role
         };
         
         await _userRepository.AddAsync(user);
