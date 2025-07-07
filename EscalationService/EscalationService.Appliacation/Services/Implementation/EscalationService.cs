@@ -15,19 +15,17 @@ namespace EscalationService.Appliacation.Services.Implementation;
 
 
 public class EscalationService(
-    IEscalationRepository repository,
+    IUnitOfWork unitOfWork,
     IValidator<EscalationDto> validator,
     IUserServiceClient userServiceClient,
-    IEscalationUserRepository escalationUserRepository,
     IUserContext userContext,
     IMessageBusPublisher messageBusPublisher,
     IMapper mapper) : IEscalationService
 {
-    private readonly IEscalationRepository _repository = repository;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IValidator<EscalationDto> _validator = validator;
     private readonly IMapper _mapper = mapper;
     private readonly IUserServiceClient _httpClientFactory = userServiceClient;
-    private readonly IEscalationUserRepository _escalationUserRepository = escalationUserRepository;
     private readonly IUserContext _userContext = userContext;
     private readonly IMessageBusPublisher _messageBusPublisher = messageBusPublisher;
 
@@ -37,7 +35,7 @@ public class EscalationService(
         SortParams? sortParams = null,
         PageParams? pageParams = null)
     {
-        var result = await _repository.GetAllAsync(filter, sortParams, pageParams);
+        var result = await _unitOfWork.Escalations.GetAllAsync(filter, sortParams, pageParams);
         return Result<PagedResult<Escalation>>.Success(result);
     }
 
@@ -49,17 +47,14 @@ public class EscalationService(
                 Error.ValidationFailed("ID must be a positive number"));
         }
                 
-        var escalation = await _repository.GetByIdAsync(id);
+        var escalation = await _unitOfWork.Escalations.GetByIdAsync(id);
 
         if (escalation == null)
         {
             return Result<Escalation>.Failure(
                 Error.NotFound<Escalation>(id));
         }
-        else
-        {
-            return Result<Escalation>.Success(escalation); 
-        }
+        return Result<Escalation>.Success(escalation); 
     }
     
     public async Task<Result<Escalation>> CreateEscalationAsync(EscalationDto dto)
@@ -88,21 +83,16 @@ public class EscalationService(
             dest.AuthorId = _userContext.GetUserId();
         }));
         
-        await _repository.AddAsync(escalation);
+        await _unitOfWork.Escalations.AddAsync(escalation);
         
-        foreach (var userId in dto.ResponsibleUserIds)
+        var escalationUsers = dto.ResponsibleUserIds.Select(userId => new EscalationUser
         {
-            await _escalationUserRepository.AddAsync(new EscalationUser
-            {
-                EscalationId = escalation.Id,
-                UserId = userId
-            });
-        }
+            EscalationId = escalation.Id,
+            UserId = userId
+        }).ToList();
         
-        foreach (var id in dto.ResponsibleUserIds)
-        {
-            Console.WriteLine($"ID: {id}, Тип: {id.GetType()?.Name}");
-        }
+        await _unitOfWork.EscalationUsers.AddRangeAsync(escalationUsers);
+        await _unitOfWork.SaveChangesAsync();
         
         await _messageBusPublisher.PublishUserIds(dto.ResponsibleUserIds);
         
@@ -111,7 +101,7 @@ public class EscalationService(
 
     public async Task<Result<Escalation>> UpdateEscalationAsync(int id, EscalationDto dto)
     {
-        var existing = await _repository.GetByIdAsync(id);
+        var existing = await _unitOfWork.Escalations.GetByIdAsync(id);
         if (existing == null)
             return Result<Escalation>.Failure(Error.NotFound<Escalation>(id));
         
@@ -135,18 +125,17 @@ public class EscalationService(
             dest.UpdatedAt = DateTime.UtcNow;
         }));
         
-        await _repository.UpdateAsync(existing);
-        
-        await _escalationUserRepository.DeleteByEscalationIdAsync(id);
-        
-        foreach (var userId in dto.ResponsibleUserIds)
+        await _unitOfWork.EscalationUsers.DeleteByEscalationIdAsync(id);
+
+        var escalationUsers = dto.ResponsibleUserIds.Select(userId => new EscalationUser
         {
-            await _escalationUserRepository.AddAsync(new EscalationUser
-            {
-                EscalationId = id,
-                UserId = userId
-            });
-        }
+            EscalationId = id,
+            UserId = userId
+        }).ToList();
+        
+        await _unitOfWork.EscalationUsers.AddRangeAsync(escalationUsers);
+        await _unitOfWork.Escalations.UpdateAsync(existing);
+        await _unitOfWork.SaveChangesAsync();
         
         return Result<Escalation>.Success(existing);
     }
@@ -161,24 +150,31 @@ public class EscalationService(
         if (id <= 0)
             return Result.Failure(Error.ValidationFailed("ID must be a positive number"));
         
-        if (!await _repository.ExistsAsync(id))
+        if (!await _unitOfWork.Escalations.ExistsAsync(id))
             return Result.Failure(Error.NotFound<Escalation>(id));
 
-        var escalation = await _repository.GetByIdAsync(id);
-        await _repository.DeleteAsync(escalation!);
+        var escalation = await _unitOfWork.Escalations.GetByIdAsync(id);
+        await _unitOfWork.Escalations.DeleteAsync(escalation);
+        await _unitOfWork.SaveChangesAsync();
     
         return Result.Success();
     }
     
-    public async Task<Result<List<Models.DTOs.EscalationDto>>> GetFilteredEscalationsAsync(
+    public async Task<Result<List<EscalationDtoMessage>>> GetFilteredEscalationsAsync(
         DateTime? fromDate = null,
         DateTime? toDate = null,
         EscalationStatus? status = null)
     {
-        var escalations = await _repository.GetFilteredEscalationsAsync(fromDate, toDate, status);
-        var dtos = _mapper.Map<List<Models.DTOs.EscalationDto>>(escalations);
-        
-        return Result<List<Models.DTOs.EscalationDto>>.Success(dtos);
+        var escalations = await _unitOfWork.Escalations.GetFilteredEscalationsAsync(fromDate, toDate, status);
+        var dtos = escalations.Select(e => new EscalationDtoMessage
+        {
+            Name = e.Name,
+            Description = e.Description,
+            Status = e.Status,
+            CreatedAt = e.CreatedAt,
+            UpdatedAt = e.UpdatedAt
+        }).ToList();        
+        return Result<List<EscalationDtoMessage>>.Success(dtos);
     }
     
     private bool CanCreateEscalation()

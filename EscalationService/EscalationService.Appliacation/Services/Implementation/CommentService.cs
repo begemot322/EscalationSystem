@@ -10,14 +10,12 @@ using Models.Result;
 namespace EscalationService.Appliacation.Services.Implementation;
 
 public class CommentService(
-    ICommentRepository commentRepository,
-    IEscalationRepository escalationRepository,
+    IUnitOfWork unitOfWork,
     IValidator<CommentDto> validator,
     IUserContext userContext,
     IMapper mapper) : ICommentService
 {
-    private readonly ICommentRepository _commentRepository = commentRepository;
-    private readonly IEscalationRepository _escalationRepository = escalationRepository;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IValidator<CommentDto> _validator = validator;
     private readonly IMapper _mapper = mapper;
     private readonly IUserContext _userContext = userContext;
@@ -27,11 +25,11 @@ public class CommentService(
         if (escalationId <= 0)
             return Result<IEnumerable<Comment>>.Failure(Error.ValidationFailed("Escalation ID must be a positive number"));
         
-        var exists = await _escalationRepository.ExistsAsync(escalationId);
+        var exists = await _unitOfWork.Escalations.ExistsAsync(escalationId);
         if (!exists)
             return Result<IEnumerable<Comment>>.Failure(Error.NotFound<Escalation>(escalationId));
         
-        var comments = await _commentRepository.GetByEscalationIdAsync(escalationId);
+        var comments = await _unitOfWork.Comments.GetByEscalationIdAsync(escalationId);
         return Result<IEnumerable<Comment>>.Success(comments);
     }
 
@@ -41,7 +39,7 @@ public class CommentService(
         if (userId <= 0)
             return Result<IEnumerable<Comment>>.Failure(Error.ValidationFailed("Escalation ID must be a positive number"));
 
-        var comments = await _commentRepository.GetByUserIdAsync(userId);
+        var comments = await _unitOfWork.Comments.GetByUserIdAsync(userId);
         return Result<IEnumerable<Comment>>.Success(comments);
     }
     
@@ -55,15 +53,19 @@ public class CommentService(
         
         var userId = _userContext.GetUserId(); 
         
-        var escalation = await _escalationRepository.GetByIdAsync(escalationId);
+        var escalation = await _unitOfWork.Escalations.GetByIdAsync(escalationId);
         if (escalation is null)
             return Result<Comment>.Failure(Error.NotFound<Escalation>(escalationId));
 
-        var comment = _mapper.Map<Comment>(dto);
-        comment.EscalationId = escalationId;
-        comment.UserId = userId;
+        var comment = _mapper.Map<Comment>(dto, opt => opt.AfterMap((src, dest) => 
+        {
+            dest.EscalationId = escalationId;
+            dest.UserId = userId;
+        }));
 
-        await _commentRepository.AddAsync(comment);
+        await _unitOfWork.Comments.AddAsync(comment);
+        await _unitOfWork.SaveChangesAsync(); 
+        
         return Result<Comment>.Success(comment);
     }
 
@@ -77,7 +79,7 @@ public class CommentService(
             return Result<Comment>.Failure(
                 Error.ValidationFailed(string.Join(", ", validation.Errors.Select(e => e.ErrorMessage))));
         
-        var comment = await _commentRepository.GetByIdAsync(commentId);
+        var comment = await _unitOfWork.Comments.GetByIdAsync(commentId);
         if (comment is null)
             return Result<Comment>.Failure(Error.NotFound<Comment>(commentId));
         
@@ -88,8 +90,9 @@ public class CommentService(
             return Result<Comment>.Failure(Error.Forbidden("You can only edit your own comments"));
         
         comment.Text = dto.Text;
-        await _commentRepository.UpdateAsync(comment);
-
+        await _unitOfWork.Comments.UpdateAsync(comment);
+        await _unitOfWork.SaveChangesAsync(); 
+        
         return Result<Comment>.Success(comment);
     }
 
@@ -98,7 +101,7 @@ public class CommentService(
         if (commentId <= 0)
             return Result.Failure(Error.ValidationFailed("Comment ID must be a positive number"));
         
-        var comment = await _commentRepository.GetByIdAsync(commentId);
+        var comment = await _unitOfWork.Comments.GetByIdAsync(commentId);
         if (comment is null)
             return Result.Failure(Error.NotFound<Comment>(commentId));
         
@@ -108,7 +111,9 @@ public class CommentService(
         if (userRole != "Senior" && comment.UserId != userId)
             return Result.Failure(Error.Forbidden("You can only delete your own comments"));
         
-        await _commentRepository.DeleteAsync(comment);
+        await _unitOfWork.Comments.DeleteAsync(comment);
+        await _unitOfWork.SaveChangesAsync(); 
+
         return Result.Success();
     }
 }
