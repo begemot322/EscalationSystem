@@ -32,19 +32,16 @@ public class CommentRepository(ApplicationDbContext db) : ICommentRepository
     public async Task AddAsync(Comment comment)
     {
         await _db.Comments.AddAsync(comment);
-        await _db.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Comment comment)
     {
         _db.Comments.Update(comment);
-        await _db.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Comment comment)
     {
         _db.Comments.Remove(comment);
-        await _db.SaveChangesAsync();
     }
 
     public async Task<bool> ExistsAsync(int id)

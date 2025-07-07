@@ -28,19 +28,16 @@ public class EscalationRepository(ApplicationDbContext db) : IEscalationReposito
     public async Task AddAsync(Escalation escalation)
     {
         await _db.Escalations.AddAsync(escalation);
-        await _db.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Escalation escalation)
     {
         _db.Escalations.Update(escalation);
-        await _db.SaveChangesAsync();;
     }
 
     public async Task DeleteAsync(Escalation escalation)
     {
         _db.Escalations.Remove(escalation);
-        await _db.SaveChangesAsync();
     }
 
     public async Task<bool> ExistsAsync(int id)
