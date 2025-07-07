@@ -18,6 +18,10 @@ public class Error
 
     public static Error NotFound<T>(int id)
         => new(ErrorType.NotFound, "not_found", $"{typeof(T).Name} with ID '{id}' not found");
+    
+    public static Error NotFound(string entityName, object id)
+        => new(ErrorType.NotFound, "not_found", 
+            $"{entityName} with ID '{id}' not found");
 
     public static Error Duplicate(string fieldName, string value)
         => new(ErrorType.Conflict, "duplicate", 
