@@ -28,7 +28,7 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-    var publisher = scope.ServiceProvider.GetRequiredService<IMessageBusPublisher>() as RabbitMqPublisher;
+    var publisher = scope.ServiceProvider.GetRequiredService<IMessageBusPublisher>() as UserIdsPublisher;
     if (publisher != null)
         await publisher.InitializeAsync();
 }
