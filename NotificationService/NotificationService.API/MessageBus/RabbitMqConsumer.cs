@@ -71,6 +71,7 @@ public class RabbitMqConsumer : BackgroundService
                     await _emailService.SendEmailAsync(emailRequest);
                 }
             }
+            await _channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
         };
         await _channel.BasicConsumeAsync(QueueName, autoAck: false, consumer, cancellationToken: stoppingToken);
 
