@@ -12,6 +12,8 @@ public interface IUserRepository
     Task AddAsync(User user);
     Task UpdateAsync(User user);
     Task DeleteAsync(User user);
+    Task<List<int>> CheckUsersExistAsync(List<int> userIds);
+    Task<List<User>> GetUsersByIdsAsync(List<int> userIds);
     Task<bool> ExistsAsync(int id);
     Task<bool> ExistsByEmailAsync(string email);
 }
