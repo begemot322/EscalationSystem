@@ -17,5 +17,9 @@ public class MappingProfile : Profile
         CreateMap<CreateCriteriaDto, Criteria>();
         CreateMap<UpdateCriteriaDto, Criteria>();
         CreateMap<EscalationDtoMessage, Escalation>().ReverseMap();
+        
+        CreateMap<Escalation, EscalationReminderDto>()
+            .ForMember(dest => dest.ResponsibleUserIds, 
+                opt => opt.MapFrom(src => src.EscalationUsers.Select(eu => eu.UserId).ToList()));
     }
 }
