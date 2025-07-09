@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using EscalationService.Appliacation.Common.Interfaces.Repositories;
 using EscalationService.Appliacation.Filters;
 using EscalationService.Domain.Entities;
@@ -46,8 +47,32 @@ public class EscalationRepository(ApplicationDbContext db) : IEscalationReposito
             .AsNoTracking()
             .AnyAsync(e => e.Id == id);
     }
-    
-    public async Task<List<Escalation>> GetFilteredEscalationsAsync(
+
+    public async Task<IEnumerable<Escalation>> GetByExpressionAsync(
+        Expression<Func<Escalation, bool>> expression,
+        string? includeProperties = null,
+        bool asNoTracking = true)
+    {
+        IQueryable<Escalation> query = _db.Escalations;
+
+        if (asNoTracking)
+            query = query.AsNoTracking();
+
+        query = query.Where(expression);
+
+        if (!string.IsNullOrEmpty(includeProperties))
+        {
+            foreach (var includeProp in includeProperties
+                         .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProp.Trim());
+            }
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<IEnumerable<Escalation>> GetFilteredEscalationsAsync(
         DateTime? fromDate = null,
         DateTime? toDate = null,
         EscalationStatus? status = null)
