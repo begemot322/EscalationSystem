@@ -19,7 +19,7 @@ public interface IEscalationService
     Task<Result<Escalation>> CreateEscalationAsync(EscalationDto  dto);
     Task<Result<Escalation>> UpdateEscalationAsync(int id, EscalationDto dto);
     Task<Result> DeleteEscalationAsync(int id);
-
+    Task<Result<List<EscalationReminderDto>>> GetOverdueEscalationsAsync();
     public Task<Result<List<EscalationDtoMessage>>> GetFilteredEscalationsAsync(
         DateTime? fromDate = null,
         DateTime? toDate = null,
