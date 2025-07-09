@@ -14,7 +14,7 @@ public class EscalationUserConfiguration : IEntityTypeConfiguration<EscalationUs
         builder.Property(eu => eu.UserId).IsRequired();
         
         builder.HasOne(eu => eu.Escalation)
-            .WithMany()
+            .WithMany(e => e.EscalationUsers)
             .HasForeignKey(eu => eu.EscalationId)
             .OnDelete(DeleteBehavior.Cascade);
     }
