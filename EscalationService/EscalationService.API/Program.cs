@@ -1,6 +1,7 @@
 using EscalationService.API;
 using EscalationService.Appliacation;
 using EscalationService.Appliacation.Common.Interfaces;
+using EscalationService.Appliacation.Services.Interfaces;
 using EscalationService.Infrastructure;
 using EscalationService.Infrastructure.MessageBus;
 
@@ -25,6 +26,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/internal/escalation/overdue",
+    async (IEscalationService escalationService) =>
+    {
+        var result = await escalationService.GetOverdueEscalationsAsync();
+        return Results.Ok(result.Data);
+    });
 
 using (var scope = app.Services.CreateScope())
 {
