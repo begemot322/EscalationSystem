@@ -84,6 +84,7 @@ public class EscalationService(
         }));
         
         await _unitOfWork.Escalations.AddAsync(escalation);
+        await _unitOfWork.SaveChangesAsync(); 
         
         var escalationUsers = dto.ResponsibleUserIds.Select(userId => new EscalationUser
         {
@@ -169,6 +170,22 @@ public class EscalationService(
         var escalationDtoMessages = _mapper.Map<List<EscalationDtoMessage>>(escalations);
         
         return Result<List<EscalationDtoMessage>>.Success(escalationDtoMessages);
+    }
+    
+    public async Task<Result<List<EscalationReminderDto>>> GetOverdueEscalationsAsync()
+    {
+        var deadline = DateTime.UtcNow.AddDays(-30);
+    
+        var escalations = await _unitOfWork.Escalations.GetByExpressionAsync(
+            expression: e => e.CreatedAt <= deadline && 
+                             e.Status != EscalationStatus.Completed &&
+                             e.Status != EscalationStatus.Rejected,
+            includeProperties: "EscalationUsers",
+            asNoTracking: true);
+    
+        var result = _mapper.Map<List<EscalationReminderDto>>(escalations);
+        
+        return Result<List<EscalationReminderDto>>.Success(result);
     }
     
     private bool CanCreateEscalation()
