@@ -21,6 +21,6 @@ public class UserService(IUserRepository userRepository) : IUserService
     public async Task<List<UserDto>> GetUsersInfo(List<int> userIds)
     {
         var users = await _userRepository.GetUsersByIdsAsync(userIds);
-        return users.Select(u => new UserDto(u.FirstName, u.LastName, u.Email)).ToList();
+        return users.Select(u => new UserDto(u.Id,u.FirstName, u.LastName, u.Email)).ToList();
     }
 }

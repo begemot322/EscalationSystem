@@ -14,7 +14,7 @@ public class UserServiceClient : IUserServiceClient
     
     public async Task<bool> CheckUsersExistAsync(List<int> userIds)
     {
-        var response = await _httpClient.PostAsJsonAsync("/api/users/check-exists", userIds);
+        var response = await _httpClient.PostAsJsonAsync("/internal/users/check-exists", userIds);
         return await response.Content.ReadFromJsonAsync<bool>();
     }
 }

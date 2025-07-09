@@ -16,7 +16,7 @@ public class UserServiceClient : IUserServiceClient
     
     public async Task<List<UserDto>> GetUsersByIdsAsync(List<int> userIds)
     {
-        var response = await _httpClient.PostAsJsonAsync("/api/users/by-ids", userIds);
+        var response = await _httpClient.PostAsJsonAsync("/internal/users/by-ids", userIds);
         return await response.Content.ReadFromJsonAsync<List<UserDto>>();
     }
 }

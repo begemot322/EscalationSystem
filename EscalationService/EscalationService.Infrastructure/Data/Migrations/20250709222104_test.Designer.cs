@@ -3,6 +3,7 @@ using System;
 using EscalationService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EscalationService.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250709222104_test")]
+    partial class test
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -120,7 +123,12 @@ namespace EscalationService.Infrastructure.Data.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("EscalationId1")
+                        .HasColumnType("integer");
+
                     b.HasKey("EscalationId", "UserId");
+
+                    b.HasIndex("EscalationId1");
 
                     b.ToTable("EscalationUsers");
                 });
@@ -146,10 +154,14 @@ namespace EscalationService.Infrastructure.Data.Migrations
             modelBuilder.Entity("EscalationService.Domain.Entities.EscalationUser", b =>
                 {
                     b.HasOne("EscalationService.Domain.Entities.Escalation", "Escalation")
-                        .WithMany("EscalationUsers")
+                        .WithMany()
                         .HasForeignKey("EscalationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("EscalationService.Domain.Entities.Escalation", null)
+                        .WithMany("EscalationUsers")
+                        .HasForeignKey("EscalationId1");
 
                     b.Navigation("Escalation");
                 });

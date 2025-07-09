@@ -20,6 +20,7 @@ public static class DependencyInjection
         
         // Rabbit
         services.AddHostedService<UserNotificationConsumer>();
+        services.AddHostedService<OverdueEscalationConsumer>();
         // Gmail
         services.AddSingleton<IEmailService, GmailService>();
 

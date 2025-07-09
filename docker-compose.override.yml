@@ -71,8 +71,13 @@ services:
       - "5003:8080"
 
   scheduler.api:
+    depends_on:
+      - messagebroker
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQ__HostName=messagebroker
+      - RabbitMQ__Username=123
+      - RabbitMQ__Password=123
     ports:
       - "5004:8080"
   

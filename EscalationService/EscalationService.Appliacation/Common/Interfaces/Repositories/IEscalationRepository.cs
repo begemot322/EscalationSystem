@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using EscalationService.Appliacation.Filters;
 using EscalationService.Domain.Entities;
 using Models;
@@ -15,8 +16,12 @@ public interface IEscalationRepository
     Task UpdateAsync(Escalation escalation);
     Task DeleteAsync(Escalation escalation);
     Task<bool> ExistsAsync(int id);
-
-    Task<List<Escalation>> GetFilteredEscalationsAsync(
+    Task<IEnumerable<Escalation>> GetByExpressionAsync(
+        Expression<Func<Escalation, bool>> expression,
+        string? includeProperties = null,
+        bool asNoTracking = true);
+    
+    Task<IEnumerable<Escalation>> GetFilteredEscalationsAsync(
         DateTime? fromDate = null,
         DateTime? toDate = null,
         EscalationStatus? status = null);
