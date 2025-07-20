@@ -79,7 +79,7 @@ public class UserServiceTests
         
         _userRepositoryMock.GetUsersByIdsAsync(userIds).Returns(users);
         
-        var expectedResult = users.Select(u => new UserDto(u.Id, u.FirstName, u.LastName, u.Email)).ToList();
+        var expectedResult = users.Select(u => new UserDto(u.Id, u.FirstName, u.LastName, u.Email, u.PhoneNumber,u.Role)).ToList();
 
         // Act
         var result = await _userService.GetUsersInfo(userIds);
