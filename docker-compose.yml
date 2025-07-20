@@ -38,6 +38,12 @@ services:
       context: .
       dockerfile: UserService/UserService.API/Dockerfile
       
+  apigateway:
+    image: apigateway
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+      
 volumes:
   escalation_data:
   user_data:
