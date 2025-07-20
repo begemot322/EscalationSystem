@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Models;
 using Models.DTOs;
 using QuestPDF.Fluent;
@@ -10,10 +11,12 @@ namespace ReportingService.API.Services;
 public class ReportService
 {
     private readonly IMessageBusPublisher _publisher;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ReportService(IMessageBusPublisher publisher)
+    public ReportService(IMessageBusPublisher publisher, IHttpContextAccessor httpContextAccessor)
     {
         _publisher = publisher;
+        _httpContextAccessor = httpContextAccessor;
         QuestPDF.Settings.License = LicenseType.Community;
     }
     
@@ -33,7 +36,7 @@ public class ReportService
                 page.DefaultTextStyle(x => x.FontSize(12));
                 
                 page.Header()
-                    .Text("Отчет по эскалациям WaveAccess")
+                    .Text("Отчет по эскалациям WaveSuccess")
                     .SemiBold().FontSize(24).FontColor(Colors.Green.Medium);
                 
                 page.Content()
@@ -90,5 +93,15 @@ public class ReportService
             });
         });
         return document.GeneratePdf();
+    }
+    
+    private bool CanCreateReport()
+    {
+        var roleClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role);
+    
+        if (roleClaim == null || roleClaim.Value == "Junior")
+            return false;
+
+        return true;
     }
 }
