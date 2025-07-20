@@ -16,6 +16,9 @@ public static class EscalationExtension
             
         if (filter.AuthorId.HasValue)
             query = query.Where(e => e.AuthorId == filter.AuthorId.Value);
+        
+        if (filter.ResponsibleUserId.HasValue)
+            query = query.Where(e => e.EscalationUsers.Any(eu => eu.UserId == filter.ResponsibleUserId.Value));
 
         if (filter.CreatedAfter.HasValue)
             query = query.Where(e => e.CreatedAt >= filter.CreatedAfter.Value);
