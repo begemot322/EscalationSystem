@@ -28,8 +28,8 @@ public class ReportPublisher : IMessageBusPublisher ,IAsyncDisposable
             Password = _rabbitMqOptions.Password
         };
         
-        _connection =  factory.CreateConnectionAsync().GetAwaiter().GetResult();
-        _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
+        _connection = Task.Run(() => factory.CreateConnectionAsync()).Result;
+        _channel = Task.Run(() => _connection.CreateChannelAsync()).Result;
     }
     
     public async Task InitializeAsync()
