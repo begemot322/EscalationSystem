@@ -18,6 +18,9 @@ public class MappingProfile : Profile
         CreateMap<UpdateCriteriaDto, Criteria>();
         CreateMap<EscalationDtoMessage, Escalation>().ReverseMap();
         
+        CreateMap<UpdateEscalationDto, Escalation>()
+            .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
+        
         CreateMap<Escalation, EscalationReminderDto>()
             .ForMember(dest => dest.ResponsibleUserIds, 
                 opt => opt.MapFrom(src => src.EscalationUsers.Select(eu => eu.UserId).ToList()));
