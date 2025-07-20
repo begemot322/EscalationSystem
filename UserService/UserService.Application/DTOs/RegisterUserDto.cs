@@ -1,3 +1,4 @@
+using Models;
 using UserService.Domain;
 
 namespace UserService.Application.DTOs;
