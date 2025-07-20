@@ -1,6 +1,7 @@
 using AutoMapper;
 using EscalationService.Appliacation.Common.Interfaces;
 using EscalationService.Appliacation.Common.Interfaces.Repositories;
+using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.Filters;
 using EscalationService.Appliacation.Services.Interfaces;
 using EscalationService.Domain.Entities;
@@ -100,44 +101,23 @@ public class EscalationService(
         return Result<Escalation>.Success(escalation);
     }
 
-    public async Task<Result<Escalation>> UpdateEscalationAsync(int id, EscalationDto dto)
+    public async Task<Result<Escalation>> UpdateEscalationAsync(int id, UpdateEscalationDto dto)
     {
         var existing = await _unitOfWork.Escalations.GetByIdAsync(id);
         if (existing == null)
             return Result<Escalation>.Failure(Error.NotFound<Escalation>(id));
-        
+    
         if (!CanUpdateEscalation(existing))
             return Result<Escalation>.Failure(Error.Forbidden("Only creator or Senior can update"));
 
         if (id <= 0)
             return Result<Escalation>.Failure(Error.ValidationFailed("ID must be a positive number"));
-        
-        var validationResult = await _validator.ValidateAsync(dto);
-        if (!validationResult.IsValid)
-            return Result<Escalation>.Failure(
-                Error.ValidationFailed(string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))));
-        
-        var usersExist = await _httpClientFactory.CheckUsersExistAsync(dto.ResponsibleUserIds);
-        if (!usersExist)
-            return Result<Escalation>.Failure(Error.NotFound("User", "one or more responsible users not found"));
-        
-        _mapper.Map(dto, existing, opt => opt.AfterMap((src, dest) => 
-        {
-            dest.UpdatedAt = DateTime.UtcNow;
-        }));
-        
-        await _unitOfWork.EscalationUsers.DeleteByEscalationIdAsync(id);
-
-        var escalationUsers = dto.ResponsibleUserIds.Select(userId => new EscalationUser
-        {
-            EscalationId = id,
-            UserId = userId
-        }).ToList();
-        
-        await _unitOfWork.EscalationUsers.AddRangeAsync(escalationUsers);
+    
+        _mapper.Map(dto, existing);
+    
         await _unitOfWork.Escalations.UpdateAsync(existing);
         await _unitOfWork.SaveChangesAsync();
-        
+    
         return Result<Escalation>.Success(existing);
     }
     
@@ -186,6 +166,38 @@ public class EscalationService(
         var result = _mapper.Map<List<EscalationReminderDto>>(escalations);
         
         return Result<List<EscalationReminderDto>>.Success(result);
+    }
+    
+    public async Task<Result<PagedResult<Escalation>>> GetUserEscalationsAsync(PageParams? pageParams = null)
+    {
+        var userId = _userContext.GetUserId();
+    
+        var filter = new EscalationFilter
+        {
+            ResponsibleUserId = userId 
+        };
+    
+        var result = await _unitOfWork.Escalations.GetAllAsync(filter, null, pageParams);
+        return Result<PagedResult<Escalation>>.Success(result);
+    }
+
+    public async Task<Result<PagedResult<Escalation>>> GetCreatedEscalationsAsync(PageParams? pageParams = null)
+    {
+        if (!CanCreateEscalation())
+        {
+            return Result<PagedResult<Escalation>>.Failure(
+                Error.Forbidden("Only Middle and Senior levels can create escalations"));
+        }
+        
+        var userId = _userContext.GetUserId();
+    
+        var filter = new EscalationFilter
+        {
+            AuthorId = userId
+        };
+    
+        var result =  await _unitOfWork.Escalations.GetAllAsync(filter, null, pageParams);
+        return Result<PagedResult<Escalation>>.Success(result);
     }
     
     private bool CanCreateEscalation()
