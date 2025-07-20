@@ -48,7 +48,6 @@ public class EscalationController : BaseController
     [Authorize(Roles = "Middle,Senior")]
     public async Task<IActionResult> AddEscalation([FromBody] EscalationDto dto)
     {
-        Console.WriteLine("создал эскалацию");
         var result = await _escalationService.CreateEscalationAsync(dto);
         if (result.IsSuccess)
             return CreatedAtAction(nameof(GetById), new { id = result.Data?.Id }, result.Data);
@@ -58,13 +57,29 @@ public class EscalationController : BaseController
     
     [HttpPut("{id:int}")]
     [Authorize]
-    public async Task<IActionResult> Update(int id, [FromBody] EscalationDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateEscalationDto dto)
     {
         var result = await _escalationService.UpdateEscalationAsync(id, dto);
         if (result.IsSuccess)
             return Ok(result.Data);
 
         return Problem(result.Error!);
+    }
+    
+    [HttpGet("assigned-to-me")] 
+    [Authorize]
+    public async Task<IActionResult> GetEscalationsWhereIAmResponsible([FromQuery] PageParams? pageParams = null)
+    {
+        var result = await _escalationService.GetUserEscalationsAsync(pageParams);
+        return result.IsSuccess ? Ok(result.Data) : Problem(result.Error!);
+    }
+    
+    [HttpGet("created-by-me")] 
+    [Authorize(Roles = "Middle,Senior")]
+    public async Task<IActionResult> GetEscalationsCreatedByMe([FromQuery] PageParams? pageParams = null)
+    {
+        var result = await _escalationService.GetCreatedEscalationsAsync(pageParams);
+        return result.IsSuccess ? Ok(result.Data) : Problem(result.Error!);
     }
  
     [HttpDelete("{id:int}")]
