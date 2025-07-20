@@ -1,6 +1,7 @@
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
+using Models;
 using Models.Result;
 using NSubstitute;
 using UserService.Application.Common.Identity;
