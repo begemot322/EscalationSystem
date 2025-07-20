@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EscalationService.API.Controllers;
 
 [ApiController]
-[Route("api/escalations/{escalationId}/[controller]")]
+[Route("api/escalation/{escalationId}/[controller]")]
 [Authorize]
 public class CriteriaController : BaseController
 {
