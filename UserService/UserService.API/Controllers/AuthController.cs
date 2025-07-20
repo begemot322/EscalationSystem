@@ -13,13 +13,13 @@ namespace UserService.API.Controllers;
 [Route("api/auth")]
 public class AuthController : BaseController
 {
-    private readonly ApplicationDbContext _db;
     private readonly IAuthService _authService;
+    private readonly IUserService _userService;
 
-    public AuthController(IAuthService authService, ApplicationDbContext db)
+    public AuthController(IAuthService authService, IUserService userService)
     {
         _authService = authService;
-        _db = db;
+        _userService = userService;
     }
 
     [HttpPost("register")]
@@ -52,5 +52,23 @@ public class AuthController : BaseController
         Response.Cookies.Delete("SecurityCookies");
         
         return Ok(new { Message = "Logged out successfully" });
+    }
+    
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        var userIdClaim = User.FindFirst("userId");
+        
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _userService.GetUserByIdAsync(userId);
+        if (result.IsSuccess)
+            return Ok(result.Data);
+
+        return Problem(result.Error);
     }
 }
