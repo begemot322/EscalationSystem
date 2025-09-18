@@ -1,5 +1,5 @@
-using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.Filters;
+using EscalationService.Appliacation.Models.DTOs;
 using EscalationService.Domain.Entities;
 using Models;
 using Models.DTOs;
@@ -20,7 +20,8 @@ public interface IEscalationService
     Task<Result<Escalation>> UpdateEscalationAsync(int id, UpdateEscalationDto dto);
     Task<Result> DeleteEscalationAsync(int id);
     Task<Result<List<EscalationReminderDto>>> GetOverdueEscalationsAsync();
-    public Task<Result<List<EscalationDtoMessage>>> GetFilteredEscalationsAsync(
+    Task<Result<IEnumerable<Escalation>>> GetFeaturedEscalationsAsync();
+    public Task<Result<IEnumerable<EscalationDtoMessage>>> GetFilteredEscalationsAsync(
         DateTime? fromDate = null,
         DateTime? toDate = null,
         EscalationStatus? status = null);
