@@ -1,8 +1,8 @@
 using System.Linq.Expressions;
 using AutoMapper;
 using EscalationService.Appliacation.Common.Interfaces;
-using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.Filters;
+using EscalationService.Appliacation.Models.DTOs;
 using EscalationService.Domain.Entities;
 using FluentAssertions;
 using FluentValidation;
@@ -20,19 +20,23 @@ public class EscalationServiceTests
 {
     private readonly IUnitOfWork _unitOfWorkMock;
     private readonly IValidator<EscalationDto> _validatorMock;
+    private readonly IValidator<UpdateEscalationDto> _updateEscalationValidatorMock;
     private readonly IUserServiceClient _userServiceClientMock;
     private readonly IUserContext _userContextMock;
     private readonly IMessageBusPublisher _messageBusPublisherMock;
     private readonly IMapper _mapper;
+    private readonly IRedisCacheService _cacheServiceMock;
     private readonly Services.Implementation.EscalationService _escalationService;
 
     public EscalationServiceTests()
     {
         _unitOfWorkMock = Substitute.For<IUnitOfWork>();
         _validatorMock = Substitute.For<IValidator<EscalationDto>>();
+        _updateEscalationValidatorMock = Substitute.For<IValidator<UpdateEscalationDto>>(); 
         _userServiceClientMock = Substitute.For<IUserServiceClient>();
         _userContextMock = Substitute.For<IUserContext>();
         _messageBusPublisherMock = Substitute.For<IMessageBusPublisher>();
+        _cacheServiceMock = Substitute.For<IRedisCacheService>();
     
         var config = new MapperConfiguration(cfg => 
         {
@@ -45,12 +49,14 @@ public class EscalationServiceTests
         _mapper = config.CreateMapper();
     
         _escalationService = new Services.Implementation.EscalationService(
-            _unitOfWorkMock,
-            _validatorMock,
-            _userServiceClientMock,
-            _userContextMock,
-            _messageBusPublisherMock,
-            _mapper);
+            _unitOfWorkMock,                    
+            _validatorMock,                    
+            _userServiceClientMock,           
+            _userContextMock,                 
+            _messageBusPublisherMock,          
+            _updateEscalationValidatorMock,    
+            _mapper,
+            _cacheServiceMock);                   
     }
     [Fact]
     public async Task GetAllEscalationsAsync_ShouldReturnPagedResult_WhenCalled()
@@ -177,15 +183,19 @@ public class EscalationServiceTests
         var dto = new UpdateEscalationDto(
             Name: "Test Escalation",
             Description: "Test Description",
-            Status: EscalationStatus.New);
+            Status: EscalationStatus.New,
+            IsFeatured: false);
     
         var existing = new Escalation { 
             Id = 1, 
             AuthorId = 100,
             Name = "Original",
             Description = "Original description",
-            Status = EscalationStatus.New
+            Status = EscalationStatus.New,
+            IsFeatured = true
         };
+        
+        _updateEscalationValidatorMock.ValidateAsync(dto).Returns(new ValidationResult());
     
         _unitOfWorkMock.Escalations.GetByIdAsync(1).Returns(existing);
         _userContextMock.GetUserId().Returns(200);
@@ -206,16 +216,20 @@ public class EscalationServiceTests
         var dto = new UpdateEscalationDto(
             Name: "Updated name",
             Description: "Updated description",
-            Status: EscalationStatus.InProgress);
+            Status: EscalationStatus.InProgress,
+            IsFeatured: true);
     
         var existing = new Escalation { 
             Id = 1, 
             AuthorId = 123, 
             Name = "Original",
             Description = "Original description",
-            Status = EscalationStatus.New
+            Status = EscalationStatus.New,
+            IsFeatured =false
         };
-    
+        
+        _updateEscalationValidatorMock.ValidateAsync(dto).Returns(new ValidationResult());
+        
         _unitOfWorkMock.Escalations.GetByIdAsync(1).Returns(existing);
         _userContextMock.GetUserId().Returns(123);
         _userContextMock.GetUserRole().Returns("Middle");
@@ -228,6 +242,7 @@ public class EscalationServiceTests
         result.Data.Name.Should().Be("Updated name");
         result.Data.Description.Should().Be("Updated description");
         result.Data.Status.Should().Be(EscalationStatus.InProgress);
+        result.Data.IsFeatured.Should().Be(true);
         await _unitOfWorkMock.Received(1).SaveChangesAsync();
     }
     
