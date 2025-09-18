@@ -21,7 +21,7 @@ public class BaseController : Controller
 
         return Problem(
             statusCode: statusCode,
-            title: error.Description,
-            detail: error.Code);
+            title: error.Code,
+            detail: error.Description);
     }
 }
