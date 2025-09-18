@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UserService.Application.DTOs;
+using UserService.Application.Models.DTOs;
 using UserService.Application.Services.Interfaces;
 using UserService.Infrastructure.Data;
 
@@ -29,7 +29,7 @@ public class AuthController : BaseController
         if (result.IsSuccess)
             return Ok(result.Data);
 
-        return Problem(result.Error);
+        return Problem(result.Error!);
     }
 
     [HttpPost("login")]
@@ -41,7 +41,7 @@ public class AuthController : BaseController
             Response.Cookies.Append("SecurityCookies", result.Data);
             return Ok(new { Message = "Authenticated successfully" });
         }
-        return Problem(result.Error);
+        return Problem(result.Error!);
     }
     
     [Authorize]

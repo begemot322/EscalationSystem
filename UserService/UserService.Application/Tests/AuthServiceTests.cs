@@ -4,9 +4,9 @@ using FluentValidation.Results;
 using Models;
 using Models.Result;
 using NSubstitute;
-using UserService.Application.Common.Identity;
+using UserService.Application.Common.Interfaces.Identity;
 using UserService.Application.Common.Interfaces.Repository;
-using UserService.Application.DTOs;
+using UserService.Application.Models.DTOs;
 using UserService.Application.Services.Implementation;
 using UserService.Domain;
 using Xunit;
@@ -156,7 +156,7 @@ public class AuthServiceTests
         var user = new User { Email = dto.Email, PasswordHash = "hashed_password" };
     
         _loginValidatorMock.ValidateAsync(dto).Returns(new ValidationResult());
-        _userRepositoryMock.GetByEmailAsync(dto.Email).Returns(user);
+        _userRepositoryMock.GetByEmailAsync(dto.Email).Returns(user); 
         _passwordHasherMock.Verify(dto.Password, user.PasswordHash).Returns(false);
 
         // Act

@@ -1,8 +1,8 @@
 using FluentValidation;
 using Models.Result;
-using UserService.Application.Common.Identity;
+using UserService.Application.Common.Interfaces.Identity;
 using UserService.Application.Common.Interfaces.Repository;
-using UserService.Application.DTOs;
+using UserService.Application.Models.DTOs;
 using UserService.Application.Services.Interfaces;
 using UserService.Domain;
 
