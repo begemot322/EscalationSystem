@@ -49,6 +49,15 @@ public class EscalationRepository(ApplicationDbContext db) : IEscalationReposito
             .AnyAsync(e => e.Id == id);
     }
 
+    public async Task<IEnumerable<Escalation>> GetFeaturedEscalationsAsync(int count)
+    {
+        return await _db.Escalations
+            .Where(e => e.IsFeatured == true) 
+            .OrderByDescending(e => e.CreatedAt) 
+            .Take(count) 
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Escalation>> GetByExpressionAsync(
         Expression<Func<Escalation, bool>> expression,
         string? includeProperties = null,
