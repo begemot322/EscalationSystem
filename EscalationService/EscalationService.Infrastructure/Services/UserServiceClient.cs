@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using EscalationService.Appliacation.Common.Interfaces;
 
-namespace EscalationService.Infrastructure;
+namespace EscalationService.Infrastructure.Services;
 
 public class UserServiceClient : IUserServiceClient
 {
