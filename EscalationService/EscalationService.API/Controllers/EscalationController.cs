@@ -1,5 +1,5 @@
-using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.Filters;
+using EscalationService.Appliacation.Models.DTOs;
 using EscalationService.Appliacation.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -80,6 +80,14 @@ public class EscalationController : BaseController
     {
         var result = await _escalationService.GetCreatedEscalationsAsync(pageParams);
         return result.IsSuccess ? Ok(result.Data) : Problem(result.Error!);
+    }
+    
+    [HttpGet("featured")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetFeaturedEscalations()
+    {
+        var result = await _escalationService.GetFeaturedEscalationsAsync();
+        return Ok(result.Data);
     }
  
     [HttpDelete("{id:int}")]
