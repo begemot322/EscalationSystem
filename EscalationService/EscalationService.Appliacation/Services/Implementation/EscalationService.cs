@@ -1,8 +1,9 @@
 using AutoMapper;
 using EscalationService.Appliacation.Common.Interfaces;
 using EscalationService.Appliacation.Common.Interfaces.Repositories;
-using EscalationService.Appliacation.DTOs;
 using EscalationService.Appliacation.Filters;
+using EscalationService.Appliacation.Models.Constants;
+using EscalationService.Appliacation.Models.DTOs;
 using EscalationService.Appliacation.Services.Interfaces;
 using EscalationService.Domain.Entities;
 using FluentValidation;
@@ -10,7 +11,7 @@ using Models;
 using Models.DTOs;
 using Models.QueryParams;
 using Models.Result;
-using EscalationDto = EscalationService.Appliacation.DTOs.EscalationDto;
+using EscalationDto = EscalationService.Appliacation.Models.DTOs.EscalationDto;
 
 namespace EscalationService.Appliacation.Services.Implementation;
 
@@ -21,16 +22,19 @@ public class EscalationService(
     IUserServiceClient userServiceClient,
     IUserContext userContext,
     IMessageBusPublisher messageBusPublisher,
-    IMapper mapper) : IEscalationService
+    IValidator<UpdateEscalationDto> updateEscalationValidator,
+    IMapper mapper,
+    IRedisCacheService cacheService) : IEscalationService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IValidator<EscalationDto> _validator = validator;
+    private readonly IValidator<UpdateEscalationDto> _updateEscalationValidator = updateEscalationValidator;
     private readonly IMapper _mapper = mapper;
     private readonly IUserServiceClient _httpClientFactory = userServiceClient;
     private readonly IUserContext _userContext = userContext;
     private readonly IMessageBusPublisher _messageBusPublisher = messageBusPublisher;
-
-
+    private readonly IRedisCacheService _cacheService = cacheService; 
+    
     public async Task<Result<PagedResult<Escalation>>> GetAllEscalationsAsync(
         EscalationFilter? filter = null,
         SortParams? sortParams = null,
@@ -82,6 +86,7 @@ public class EscalationService(
             dest.CreatedAt = DateTime.UtcNow;
             dest.UpdatedAt = DateTime.UtcNow;
             dest.AuthorId = _userContext.GetUserId();
+            dest.IsFeatured = false;
         }));
         
         await _unitOfWork.Escalations.AddAsync(escalation);
@@ -103,20 +108,36 @@ public class EscalationService(
 
     public async Task<Result<Escalation>> UpdateEscalationAsync(int id, UpdateEscalationDto dto)
     {
+        if (id <= 0)
+            return Result<Escalation>.Failure(Error.ValidationFailed("ID must be a positive number"));
+        
+        var validationResult = await _updateEscalationValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+            return Result<Escalation>.Failure(
+                Error.ValidationFailed(string.Join(", ", 
+                    validationResult.Errors.Select(e => e.ErrorMessage))));
+        
         var existing = await _unitOfWork.Escalations.GetByIdAsync(id);
         if (existing == null)
             return Result<Escalation>.Failure(Error.NotFound<Escalation>(id));
-    
+        
         if (!CanUpdateEscalation(existing))
             return Result<Escalation>.Failure(Error.Forbidden("Only creator or Senior can update"));
+        
+        var wasFeatured = existing.IsFeatured;
 
-        if (id <= 0)
-            return Result<Escalation>.Failure(Error.ValidationFailed("ID must be a positive number"));
-    
-        _mapper.Map(dto, existing);
+        _mapper.Map(dto, existing, opt => opt.AfterMap((src, dest) => 
+        {
+            dest.UpdatedAt = DateTime.UtcNow;
+        }));
     
         await _unitOfWork.Escalations.UpdateAsync(existing);
         await _unitOfWork.SaveChangesAsync();
+        
+        if (wasFeatured != existing.IsFeatured)
+        {
+            await _cacheService.RemoveDataAsync(CacheConstants.FEATURED_ESCALATIONS_KEY);
+        }
     
         return Result<Escalation>.Success(existing);
     }
@@ -140,8 +161,31 @@ public class EscalationService(
     
         return Result.Success();
     }
-    
-    public async Task<Result<List<EscalationDtoMessage>>> GetFilteredEscalationsAsync(
+
+    public async Task<Result<IEnumerable<Escalation>>> GetFeaturedEscalationsAsync()
+    {
+        var cachedEscalations = await _cacheService.GetDataAsync<IEnumerable<Escalation>>(CacheConstants.FEATURED_ESCALATIONS_KEY);
+        
+        if (cachedEscalations != null && cachedEscalations.Any())
+        {
+            return Result<IEnumerable<Escalation>>.Success(cachedEscalations);
+        }
+        
+        var featuredEscalations = await _unitOfWork.Escalations
+            .GetFeaturedEscalationsAsync(EscalationConstants.FEATURED_ESCALATIONS_COUNT);
+        
+        if (featuredEscalations != null && featuredEscalations.Any())
+        {
+            await _cacheService.SetDataAsync(
+                CacheConstants.FEATURED_ESCALATIONS_KEY, 
+                featuredEscalations, 
+                CacheConstants.FEATURED_CACHE_EXPIRATION);
+        }
+        
+        return Result<IEnumerable<Escalation>>.Success(featuredEscalations);
+    }
+
+    public async Task<Result<IEnumerable<EscalationDtoMessage>>> GetFilteredEscalationsAsync(
         DateTime? fromDate = null,
         DateTime? toDate = null,
         EscalationStatus? status = null)
@@ -149,12 +193,12 @@ public class EscalationService(
         var escalations = await _unitOfWork.Escalations.GetFilteredEscalationsAsync(fromDate, toDate, status);
         var escalationDtoMessages = _mapper.Map<List<EscalationDtoMessage>>(escalations);
         
-        return Result<List<EscalationDtoMessage>>.Success(escalationDtoMessages);
+        return Result<IEnumerable<EscalationDtoMessage>>.Success(escalationDtoMessages);
     }
     
     public async Task<Result<List<EscalationReminderDto>>> GetOverdueEscalationsAsync()
     {
-        var deadline = DateTime.UtcNow.AddDays(-30);
+        var deadline = DateTime.UtcNow.AddDays(-EscalationConstants.OVERDUE_DAYS);
     
         var escalations = await _unitOfWork.Escalations.GetByExpressionAsync(
             expression: e => e.CreatedAt <= deadline && 
