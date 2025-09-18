@@ -2,7 +2,7 @@ using Models;
 using Models.DTOs;
 using Models.QueryParams;
 using Models.Result;
-using UserService.Application.Filters;
+using UserService.Application.Models.Filters;
 using UserService.Domain;
 
 namespace UserService.Application.Services.Interfaces;
