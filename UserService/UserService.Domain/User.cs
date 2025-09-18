@@ -1,4 +1,6 @@
-﻿namespace UserService.Domain;
+﻿using Models;
+
+namespace UserService.Domain;
 
 public class User
 {

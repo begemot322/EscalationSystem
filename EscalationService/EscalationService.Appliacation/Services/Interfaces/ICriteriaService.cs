@@ -1,4 +1,4 @@
-using EscalationService.Appliacation.DTOs.Criteria;
+using EscalationService.Appliacation.Models.DTOs.Criteria;
 using EscalationService.Domain.Entities;
 using Models.Result;
 

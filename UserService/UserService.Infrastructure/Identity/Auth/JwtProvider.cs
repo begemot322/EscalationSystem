@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Models;
 using Models.Options;
-using UserService.Application.Common.Identity;
+using UserService.Application.Common.Interfaces.Identity;
 using UserService.Domain;
 
 namespace UserService.Infrastructure.Identity.Auth;

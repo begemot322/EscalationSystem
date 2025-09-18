@@ -32,19 +32,28 @@ services:
     restart: always                     
     ports:
       - "5672:5672"                    
-      - "15672:15672"        
-    
+      - "15672:15672"    
+        
+  redis:
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
   
   escalation.api:
     depends_on:
       - escalationdb
       - messagebroker
+      - redis
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Database=Host=escalationdb;Port=5432;Database=EscalationDb;Username=123;Password=123
       - RabbitMQ__HostName=messagebroker      
       - RabbitMQ__Username=123
       - RabbitMQ__Password=123
+      - Redis=redis:6379
     ports:
       - "5001:8080"
   
@@ -94,3 +103,18 @@ services:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
     ports:
       - "5005:8080"
+    
+  apigateway:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    depends_on:
+      - escalation.api
+      - user.api
+      - reporting.api
+    ports:
+      - "5000:8000"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

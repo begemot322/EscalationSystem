@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Exceptions", "Common\Except
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Common\Models\Models.csproj", "{B6019B04-1148-4988-9DF7-BA4C9047BB68}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "ApiGateway\ApiGateway.csproj", "{4DB191F3-88C8-4F2C-A9E1-300207D85775}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,5 +113,9 @@ Global
 		{B6019B04-1148-4988-9DF7-BA4C9047BB68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6019B04-1148-4988-9DF7-BA4C9047BB68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6019B04-1148-4988-9DF7-BA4C9047BB68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DB191F3-88C8-4F2C-A9E1-300207D85775}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DB191F3-88C8-4F2C-A9E1-300207D85775}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DB191F3-88C8-4F2C-A9E1-300207D85775}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DB191F3-88C8-4F2C-A9E1-300207D85775}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

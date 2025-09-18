@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Models;
 using Models.Options;
-using UserService.Application.Common.Identity;
+using UserService.Application.Common.Interfaces;
+using UserService.Application.Common.Interfaces.Identity;
 using UserService.Application.Common.Interfaces.Repository;
 using UserService.Application.Services.Interfaces;
 using UserService.Infrastructure.Data;
@@ -25,12 +25,10 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddData(configuration);
-        services.AddServices();
         services.AddAuth(configuration);
 
         return services;
     }
-    
     
     private static IServiceCollection AddData(this IServiceCollection services,
         IConfiguration configuration)
@@ -47,13 +45,6 @@ public static class DependencyInjection
         return services;
     }
     
-    private static IServiceCollection AddServices(this IServiceCollection services)
-    {
-        services.AddScoped<IUserService, Application.Services.Implementation.UserService>();
-
-        return services;
-    }
-
     private static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<JwtOptions>(configuration.GetSection(nameof(JwtOptions)));

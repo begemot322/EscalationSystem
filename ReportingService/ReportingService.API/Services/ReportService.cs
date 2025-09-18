@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Models;
 using Models.DTOs;
 using QuestPDF.Fluent;
@@ -10,15 +11,20 @@ namespace ReportingService.API.Services;
 public class ReportService
 {
     private readonly IMessageBusPublisher _publisher;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ReportService(IMessageBusPublisher publisher)
+    public ReportService(IMessageBusPublisher publisher, IHttpContextAccessor httpContextAccessor)
     {
         _publisher = publisher;
+        _httpContextAccessor = httpContextAccessor;
         QuestPDF.Settings.License = LicenseType.Community;
     }
     
     public async Task<byte[]> GenerateReportAsync(DateTime from, DateTime to, EscalationStatus? status)
     {
+        if (!CanCreateReport())
+            throw new UnauthorizedAccessException("У вас нет прав для генерации отчетов");
+
         var escalations = await _publisher.GetEscalationsAsync(
             new ReportRequest { FromDate = from, ToDate = to, Status = status}
         );
@@ -30,65 +36,137 @@ public class ReportService
                 page.Size(PageSizes.A4);
                 page.Margin(2, Unit.Centimetre);
                 page.PageColor(Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(12));
+                page.DefaultTextStyle(x => x.FontSize(11).FontFamily("Helvetica"));
                 
                 page.Header()
-                    .Text("Отчет по эскалациям WaveAccess")
-                    .SemiBold().FontSize(24).FontColor(Colors.Green.Medium);
+                    .Height(2.5f, Unit.Centimetre)
+                    .BorderBottom(1)
+                    .BorderColor(Colors.Grey.Lighten2)
+                    .AlignCenter()
+                    .AlignMiddle()
+                    .Text("WaveForm - отчет по эскалациям")
+                    .Bold().FontSize(16).FontColor(Colors.Black);
                 
                 page.Content()
                     .PaddingVertical(1, Unit.Centimetre)
                     .Column(column =>
                     {
-                        column.Item().Text($"Период: {from:d} - {to:d}");
-                        column.Item().Text($"Статус: {status?.ToString() ?? "Все"}");
-                        column.Item().PaddingTop(10).Text("Список эскалаций:");
+                        column.Item()
+                            .Background(Colors.Grey.Lighten3)
+                            .Padding(10)
+                            .Row(row =>
+                            {
+                                row.RelativeItem().Text($"Период: {from:dd.MM.yyyy} - {to:dd.MM.yyyy}");
+                                row.RelativeItem().Text($"Статус: {GetStatusText(status)}").AlignRight();
+                                row.RelativeItem().Text($"Всего: {escalations.Count}").AlignRight();
+                            });
+                        
+                        column.Item().PaddingTop(15);
 
-                        column.Item().Table(table =>
+                        if (escalations.Any())
                         {
-                            table.ColumnsDefinition(columns =>
+                            column.Item().Table(table =>
                             {
-                                columns.RelativeColumn(3); // Название
-                                columns.RelativeColumn(2); // Статус
-                                columns.RelativeColumn(3); // Описание
-                                columns.RelativeColumn(2); // Дата
-                            });
-                            
-                            // Заголовок таблицы
-                            table.Header(header =>
-                            {
-                                header.Cell().Text("Название");
-                                header.Cell().Text("Статус");
-                                header.Cell().Text("Описание");
-                                header.Cell().Text("Дата");
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn(2); 
+                                    columns.RelativeColumn(1.5f); 
+                                    columns.RelativeColumn(3); 
+                                    columns.RelativeColumn(1.2f); 
+                                });
                                 
-                                header.Cell().ColumnSpan(4)
-                                    .PaddingTop(5).BorderBottom(1)
-                                    .BorderColor(Colors.Black);
+                                table.Header(header =>
+                                {
+                                    header.Cell().Background(Colors.Grey.Lighten2).Padding(5)
+                                        .Text("Название").Bold().FontColor(Colors.Black);
+                                    header.Cell().Background(Colors.Grey.Lighten2).Padding(5)
+                                        .Text("Статус").Bold().FontColor(Colors.Black);
+                                    header.Cell().Background(Colors.Grey.Lighten2).Padding(5)
+                                        .Text("Описание").Bold().FontColor(Colors.Black);
+                                    header.Cell().Background(Colors.Grey.Lighten2).Padding(5)
+                                        .Text("Дата создания").Bold().FontColor(Colors.Black);
+                                });
+                                
+                                for (int i = 0; i < escalations.Count; i++)
+                                {
+                                    var esc = escalations[i];
+                                    var bgColor = i % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+                                    
+                                    table.Cell().Background(bgColor).Padding(5).Text(esc.Name);
+                                    table.Cell().Background(bgColor).Padding(5)
+                                        .Text(GetStatusText(esc.Status)).FontColor(GetStatusColor(esc.Status));
+                                    table.Cell().Background(bgColor).Padding(5).Text(esc.Description);
+                                    table.Cell().Background(bgColor).Padding(5).Text(esc.CreatedAt.ToString("dd.MM.yyyy"));
+                                }
                             });
-                            
-                            // Данные таблицы
-                            foreach (var esc in escalations)
-                            {
-                                table.Cell().Text(esc.Name);
-                                table.Cell().Text(esc.Status.ToString());
-                                table.Cell().Text(esc.Description);
-                                table.Cell().Text(esc.CreatedAt.ToString("d"));
-                            }
-                        });
+                        }
+                        else
+                        {
+                            column.Item()
+                                .Background(Colors.Grey.Lighten3)
+                                .Padding(20)
+                                .Border(1)
+                                .BorderColor(Colors.Grey.Lighten2)
+                                .AlignCenter()
+                                .Text("Нет данных за выбранный период")
+                                .Italic().FontSize(14).FontColor(Colors.Grey.Medium);
+                        }
                     });
                 
                 page.Footer()
+                    .Height(1.2f, Unit.Centimetre)
+                    .BorderTop(1)
+                    .BorderColor(Colors.Grey.Lighten2)
                     .AlignCenter()
-                    .Text(x =>
+                    .AlignMiddle()
+                    .Text(text =>
                     {
-                        x.Span("Страница ");
-                        x.CurrentPageNumber();
-                        x.Span(" из ");
-                        x.TotalPages();
+                        text.Span("Сгенерировано: ").FontSize(13).FontColor(Colors.Black);
+                        text.Span(DateTime.Now.ToString("dd.MM.yyyy HH:mm")).FontSize(13).FontColor(Colors.Black);
+                        text.Span(" | Страница ").FontSize(13).FontColor(Colors.Black);
+                        text.CurrentPageNumber().FontSize(13).FontColor(Colors.Black);
+                        text.Span(" из ").FontSize(13).FontColor(Colors.Black);
+                        text.TotalPages().FontSize(13).FontColor(Colors.Black);
                     });
             });
         });
+        
         return document.GeneratePdf();
+    }
+    
+    private string GetStatusText(EscalationStatus? status)
+    {
+        return status switch
+        {
+            EscalationStatus.New => "Новая",
+            EscalationStatus.InProgress => "В работе",
+            EscalationStatus.OnReview => "На проверке",
+            EscalationStatus.Completed => "Завершена",
+            EscalationStatus.Rejected => "Отклонена",
+            _ => "Все статусы"
+        };
+    }
+    
+    private string GetStatusColor(EscalationStatus status)
+    {
+        return status switch
+        {
+            EscalationStatus.New => Colors.Blue.Darken2,      
+            EscalationStatus.InProgress => Colors.Orange.Darken2, 
+            EscalationStatus.OnReview => Colors.Purple.Darken2,   
+            EscalationStatus.Completed => Colors.Green.Darken2,  
+            EscalationStatus.Rejected => Colors.Red.Darken2,    
+            _ => Colors.Black
+        };
+    }
+    
+    private bool CanCreateReport()
+    {
+        var roleClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role);
+    
+        if (roleClaim == null || roleClaim.Value == "Junior")
+            return false;
+
+        return true;
     }
 }

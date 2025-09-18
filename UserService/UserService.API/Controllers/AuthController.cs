@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UserService.Application.DTOs;
+using UserService.Application.Models.DTOs;
 using UserService.Application.Services.Interfaces;
 using UserService.Infrastructure.Data;
 
@@ -13,13 +13,13 @@ namespace UserService.API.Controllers;
 [Route("api/auth")]
 public class AuthController : BaseController
 {
-    private readonly ApplicationDbContext _db;
     private readonly IAuthService _authService;
+    private readonly IUserService _userService;
 
-    public AuthController(IAuthService authService, ApplicationDbContext db)
+    public AuthController(IAuthService authService, IUserService userService)
     {
         _authService = authService;
-        _db = db;
+        _userService = userService;
     }
 
     [HttpPost("register")]
@@ -29,7 +29,7 @@ public class AuthController : BaseController
         if (result.IsSuccess)
             return Ok(result.Data);
 
-        return Problem(result.Error);
+        return Problem(result.Error!);
     }
 
     [HttpPost("login")]
@@ -41,7 +41,7 @@ public class AuthController : BaseController
             Response.Cookies.Append("SecurityCookies", result.Data);
             return Ok(new { Message = "Authenticated successfully" });
         }
-        return Problem(result.Error);
+        return Problem(result.Error!);
     }
     
     [Authorize]
@@ -52,5 +52,23 @@ public class AuthController : BaseController
         Response.Cookies.Delete("SecurityCookies");
         
         return Ok(new { Message = "Logged out successfully" });
+    }
+    
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        var userIdClaim = User.FindFirst("userId");
+        
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _userService.GetUserByIdAsync(userId);
+        if (result.IsSuccess)
+            return Ok(result.Data);
+
+        return Problem(result.Error);
     }
 }

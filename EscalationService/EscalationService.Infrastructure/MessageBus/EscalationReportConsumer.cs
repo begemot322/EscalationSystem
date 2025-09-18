@@ -58,6 +58,12 @@ public class EscalationReportConsumer: BackgroundService
                 
                 var body = ea.Body.ToArray();
                 var request = JsonSerializer.Deserialize<ReportRequest>(body);
+                
+                if (request is not null)
+                {
+                    request.FromDate = DateTime.SpecifyKind(request.FromDate, DateTimeKind.Utc);
+                    request.ToDate = DateTime.SpecifyKind(request.ToDate, DateTimeKind.Utc);
+                }
 
                 var result  = await service.GetFilteredEscalationsAsync(
                     request?.FromDate,

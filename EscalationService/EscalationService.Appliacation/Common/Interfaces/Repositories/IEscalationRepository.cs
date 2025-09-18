@@ -16,6 +16,7 @@ public interface IEscalationRepository
     Task UpdateAsync(Escalation escalation);
     Task DeleteAsync(Escalation escalation);
     Task<bool> ExistsAsync(int id);
+    Task<IEnumerable<Escalation>> GetFeaturedEscalationsAsync(int count);
     Task<IEnumerable<Escalation>> GetByExpressionAsync(
         Expression<Func<Escalation, bool>> expression,
         string? includeProperties = null,

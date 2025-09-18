@@ -16,6 +16,7 @@ public class EscalationRepository(ApplicationDbContext db) : IEscalationReposito
     public async Task<PagedResult<Escalation>> GetAllAsync(EscalationFilter? filter, SortParams? sortParams, PageParams? pageParams)
     {
         return await _db.Escalations
+            .Include(e => e.EscalationUsers)
             .AsNoTracking()
             .Filter(filter)
             .Sort(sortParams)
@@ -46,6 +47,15 @@ public class EscalationRepository(ApplicationDbContext db) : IEscalationReposito
         return await _db.Escalations
             .AsNoTracking()
             .AnyAsync(e => e.Id == id);
+    }
+
+    public async Task<IEnumerable<Escalation>> GetFeaturedEscalationsAsync(int count)
+    {
+        return await _db.Escalations
+            .Where(e => e.IsFeatured == true) 
+            .OrderByDescending(e => e.CreatedAt) 
+            .Take(count) 
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<Escalation>> GetByExpressionAsync(

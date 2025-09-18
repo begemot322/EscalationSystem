@@ -1,4 +1,4 @@
-using EscalationService.Appliacation.DTOs.Criteria;
+using EscalationService.Appliacation.Models.DTOs.Criteria;
 using EscalationService.Appliacation.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EscalationService.API.Controllers;
 
 [ApiController]
-[Route("api/escalations/{escalationId}/[controller]")]
+[Route("api/escalation/{escalationId}/[controller]")]
 [Authorize]
 public class CriteriaController : BaseController
 {

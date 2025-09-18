@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../css/bootstrap.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link href="../css/style.css" rel="stylesheet">
+  <title>Детали эскалации (Ответственный) | WaveSuccess</title>
+  <link rel="icon" href="../assets/images/waveform.png" type="image/x-icon" />
+</head>
+<body>
+<div id="header-container"></div>
+
+<div class="container my-4">
+
+  <div id="message-container"></div>
+
+  <div id="escalation-details"></div>
+
+  <div class="card shadow">
+    <div class="card-body">
+      <h4 class="mb-3">Критерии эскалации</h4>
+      <div id="criteria-list">
+        <div class="text-center my-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+          </div>
+          <div class="mt-2">Загрузка критериев...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow mt-4">
+    <div class="card-body">
+      <h4 class="mb-3">Комментарии</h4>
+
+      <div id="add-comment-form" class="mb-3">
+        <div class="input-group">
+          <textarea class="form-control" id="new-comment-text"
+                    placeholder="Введите ваш комментарий" rows="2"></textarea>
+          <button class="btn btn-info ms-2" id="add-comment-btn">Отправить</button>
+        </div>
+      </div>
+
+      <div id="comments-list">
+        <div class="text-center my-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+          </div>
+          <div class="mt-2">Загрузка комментариев...</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="mt-4">
+    <button class="btn btn-outline-dark" onclick="goBack()">
+      <i class="bi bi-arrow-left"></i> Назад к моим ответственностям
+    </button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  function goBack() {
+    window.location.href = 'my-responsibilities.html';
+  }
+</script>
+
+<script type="module">
+  import { initApp } from '../js/main.js';
+  import { loadAssignedEscalationDetails } from '../js/escalation/handlers/escalation-details-assigned-handler.js';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initApp();
+    loadAssignedEscalationDetails();
+  });
+</script>
+</body>
+</html>

@@ -1,7 +1,6 @@
 using AutoMapper;
 using EscalationService.Appliacation.Common.Interfaces;
-using EscalationService.Appliacation.Common.Interfaces.Repositories;
-using EscalationService.Appliacation.DTOs.Criteria;
+using EscalationService.Appliacation.Models.DTOs.Criteria;
 using EscalationService.Appliacation.Services.Interfaces;
 using EscalationService.Domain.Entities;
 using FluentValidation;
