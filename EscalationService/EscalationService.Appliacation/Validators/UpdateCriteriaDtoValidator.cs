@@ -1,4 +1,4 @@
-using EscalationService.Appliacation.DTOs.Criteria;
+using EscalationService.Appliacation.Models.DTOs.Criteria;
 using FluentValidation;
 
 namespace EscalationService.Appliacation.Validators;
