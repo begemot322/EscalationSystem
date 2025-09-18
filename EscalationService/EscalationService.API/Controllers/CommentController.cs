@@ -1,4 +1,4 @@
-using EscalationService.Appliacation.DTOs;
+using EscalationService.Appliacation.Models.DTOs;
 using EscalationService.Appliacation.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +7,7 @@ namespace EscalationService.API.Controllers;
 
 
 [ApiController]
-[Route("api/escalations/{escalationId}/[controller]")]
+[Route("api/escalation/{escalationId}/[controller]")]
 [Authorize] 
 public class CommentController : BaseController
 {
