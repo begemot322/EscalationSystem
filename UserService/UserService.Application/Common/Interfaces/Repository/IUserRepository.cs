@@ -1,5 +1,5 @@
 using Models.QueryParams;
-using UserService.Application.Filters;
+using UserService.Application.Models.Filters;
 using UserService.Domain;
 
 namespace UserService.Application.Common.Interfaces.Repository;
@@ -13,7 +13,7 @@ public interface IUserRepository
     Task UpdateAsync(User user);
     Task DeleteAsync(User user);
     Task<List<int>> CheckUsersExistAsync(List<int> userIds);
-    Task<List<User>> GetUsersByIdsAsync(List<int> userIds);
+    Task<IEnumerable<User>> GetUsersByIdsAsync(List<int> userIds);
     Task<bool> ExistsAsync(int id);
     Task<bool> ExistsByEmailAsync(string email);
 }

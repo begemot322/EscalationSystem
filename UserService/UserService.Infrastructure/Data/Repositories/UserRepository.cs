@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.QueryParams;
 using UserService.Application.Common.Interfaces.Repository;
-using UserService.Application.Filters;
+using UserService.Application.Models.Filters;
 using UserService.Domain;
 using UserService.Infrastructure.Extensions;
 
@@ -57,7 +57,7 @@ public class UserRepository(ApplicationDbContext db) : IUserRepository
             .Select(u => u.Id)
             .ToListAsync();
     }
-    public async Task<List<User>> GetUsersByIdsAsync(List<int> userIds)
+    public async Task<IEnumerable<User>> GetUsersByIdsAsync(List<int> userIds)
     {
         return await _db.Users
             .Where(u => userIds.Contains(u.Id))
