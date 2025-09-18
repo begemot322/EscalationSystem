@@ -1,4 +1,4 @@
-using EscalationService.Appliacation.DTOs;
+using EscalationService.Appliacation.Models.DTOs;
 using EscalationService.Domain.Entities;
 using Models.Result;
 
