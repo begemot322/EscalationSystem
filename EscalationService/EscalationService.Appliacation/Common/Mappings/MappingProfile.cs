@@ -1,6 +1,6 @@
 using AutoMapper;
-using EscalationService.Appliacation.DTOs;
-using EscalationService.Appliacation.DTOs.Criteria;
+using EscalationService.Appliacation.Models.DTOs;
+using EscalationService.Appliacation.Models.DTOs.Criteria;
 using EscalationService.Domain.Entities;
 using Models.DTOs;
 
@@ -18,8 +18,7 @@ public class MappingProfile : Profile
         CreateMap<UpdateCriteriaDto, Criteria>();
         CreateMap<EscalationDtoMessage, Escalation>().ReverseMap();
         
-        CreateMap<UpdateEscalationDto, Escalation>()
-            .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
+        CreateMap<UpdateEscalationDto, Escalation>();
         
         CreateMap<Escalation, EscalationReminderDto>()
             .ForMember(dest => dest.ResponsibleUserIds, 
