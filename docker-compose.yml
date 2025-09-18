@@ -7,6 +7,9 @@ services:
     
   messagebroker:
     image: rabbitmq:management
+    
+  redis:
+    image: redis:latest
       
   escalation.api:
     image: escalationapi
@@ -43,7 +46,8 @@ services:
     build:
       context: .
       dockerfile: ApiGateway/Dockerfile
-      
+  
 volumes:
   escalation_data:
   user_data:
+  redis_data:
