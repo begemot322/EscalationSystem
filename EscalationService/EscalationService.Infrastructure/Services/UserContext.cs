@@ -2,7 +2,7 @@ using System.Security.Claims;
 using EscalationService.Appliacation.Common.Interfaces;
 using Microsoft.AspNetCore.Http;
 
-namespace EscalationService.Infrastructure;
+namespace EscalationService.Infrastructure.Services;
 
 public class UserContext(IHttpContextAccessor httpContextAccessor) : IUserContext
 {

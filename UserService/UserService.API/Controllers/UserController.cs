@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.DTOs;
 using Models.QueryParams;
-using UserService.Application.Filters;
+using UserService.Application.Models.Filters;
 using UserService.Application.Services.Interfaces;
 using UserService.Domain;
 

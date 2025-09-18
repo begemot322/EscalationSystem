@@ -1,4 +1,4 @@
-namespace UserService.Application.Filters;
+namespace UserService.Application.Models.Filters;
 
 public class UserFilter
 {
