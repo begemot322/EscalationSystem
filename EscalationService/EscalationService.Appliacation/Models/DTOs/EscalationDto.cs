@@ -1,6 +1,6 @@
 using Models;
 
-namespace EscalationService.Appliacation.DTOs;
+namespace EscalationService.Appliacation.Models.DTOs;
 
 public record EscalationDto(
     string Name,

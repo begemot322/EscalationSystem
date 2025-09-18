@@ -1,5 +1,5 @@
 using EscalationService.Appliacation.Common.Interfaces.Repositories;
-using EscalationService.Appliacation.DTOs;
+using EscalationService.Appliacation.Models.DTOs;
 using EscalationService.Appliacation.Services.Implementation;
 using EscalationService.Appliacation.Services.Interfaces;
 using FluentValidation;

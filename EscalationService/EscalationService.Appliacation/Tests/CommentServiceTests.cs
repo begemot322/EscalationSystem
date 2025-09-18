@@ -1,6 +1,6 @@
 using AutoMapper;
 using EscalationService.Appliacation.Common.Interfaces;
-using EscalationService.Appliacation.DTOs;
+using EscalationService.Appliacation.Models.DTOs;
 using EscalationService.Appliacation.Services.Implementation;
 using EscalationService.Domain.Entities;
 using FluentAssertions;

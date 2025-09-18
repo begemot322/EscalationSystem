@@ -1,7 +1,6 @@
 using AutoMapper;
 using EscalationService.Appliacation.Common.Interfaces;
-using EscalationService.Appliacation.Common.Interfaces.Repositories;
-using EscalationService.Appliacation.DTOs;
+using EscalationService.Appliacation.Models.DTOs;
 using EscalationService.Appliacation.Services.Interfaces;
 using EscalationService.Domain.Entities;
 using FluentValidation;
@@ -61,8 +60,9 @@ public class CommentService(
         {
             dest.EscalationId = escalationId;
             dest.UserId = userId;
+            dest.CreatedAt = DateTime.UtcNow;
         }));
-
+        
         await _unitOfWork.Comments.AddAsync(comment);
         await _unitOfWork.SaveChangesAsync(); 
         
