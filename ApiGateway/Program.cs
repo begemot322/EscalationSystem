@@ -1,5 +1,3 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +13,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "http://localhost:63343",
+                "http://localhost:65328",
                 "http://localhost:63342",
                 "http://localhost:3000" 
             )
