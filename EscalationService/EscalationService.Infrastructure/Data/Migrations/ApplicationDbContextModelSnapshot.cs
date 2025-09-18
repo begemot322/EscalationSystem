@@ -30,6 +30,9 @@ namespace EscalationService.Infrastructure.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("EscalationId")
                         .HasColumnType("integer");
 
@@ -95,6 +98,9 @@ namespace EscalationService.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
