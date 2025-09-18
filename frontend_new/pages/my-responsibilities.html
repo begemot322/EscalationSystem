@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link href="../css/bootstrap.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link href="../css/style.css" rel="stylesheet">
   <title>Мои ответственности | WaveSuccess</title>
-  <link rel="icon" href="../assets/images/WaveSuccess.png" type="image/x-icon" />
+  <link rel="icon" href="../assets/images/waveform.png" type="image/x-icon" />
 </head>
 <body>
 <div id="header-container"></div>
@@ -16,12 +16,29 @@
   <div class="row">
     <div class="col-12">
       <div class="card shadow">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-dark text-white">
           <h4 class="card-title mb-0">
             <i class="bi bi-list-task"></i> Эскалации, где я ответственный
           </h4>
         </div>
         <div class="card-body p-4">
+          <!-- Контейнер для сообщений -->
+          <div id="message-container"></div>
+
+          <!-- Информация о пагинации -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <small id="searchInfo" class="text-muted">Загрузка...</small>
+            <div class="btn-group">
+              <button type="button" class="btn btn-outline-light" id="prevPage" disabled>
+                <i class="bi bi-arrow-left"></i> Назад
+              </button>
+              <button type="button" class="btn btn-outline-light mx-2" id="nextPage" disabled>
+                Вперед <i class="bi bi-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Контейнер для эскалаций -->
           <div id="escalations-container">
             <div class="text-center my-4">
               <div class="spinner-border text-primary" role="status">
@@ -44,12 +61,21 @@
 
 <script type="module">
   import { initApp } from '../js/main.js';
-  import { handleAssignedEscalations } from '../js/escalation/my-escalations-handler.js';
+  import {
+    handleAssignedEscalations,
+    nextPage,
+    prevPage
+  } from '../js/escalation/handlers/escalation-list-handler.js';
 
   document.addEventListener('DOMContentLoaded', () => {
     initApp();
     handleAssignedEscalations();
+
     document.getElementById('update-time').textContent = new Date().toLocaleString();
+
+    // Навешиваем обработчики на кнопки пагинации
+    document.getElementById('nextPage').addEventListener('click', nextPage);
+    document.getElementById('prevPage').addEventListener('click', prevPage);
   });
 </script>
 </body>
