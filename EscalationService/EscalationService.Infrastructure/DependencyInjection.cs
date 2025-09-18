@@ -5,6 +5,7 @@ using EscalationService.Appliacation.Common.Interfaces.Repositories;
 using EscalationService.Infrastructure.Data;
 using EscalationService.Infrastructure.Data.Repositories;
 using EscalationService.Infrastructure.MessageBus;
+using EscalationService.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
@@ -34,7 +35,10 @@ public static class DependencyInjection
         services.AddSingleton<IMessageBusPublisher, UserIdsPublisher>();
         services.AddHostedService<EscalationReportConsumer>();
 
+        services.AddRedis(configuration);
+
         services.AddData(configuration); 
+        
         services.AddAuth(configuration);
 
         return services;
@@ -55,6 +59,22 @@ public static class DependencyInjection
         services.AddScoped<IEscalationUserRepository, EscalationUserRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        
+        return services;
+    }
+
+    private static IServiceCollection AddRedis(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var redisConnection = configuration["Redis"];
+        
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnection;
+            options.InstanceName = "EscalationService";
+        });
+        
+        services.AddScoped<IRedisCacheService, RedisCacheService>();
         
         return services;
     }
