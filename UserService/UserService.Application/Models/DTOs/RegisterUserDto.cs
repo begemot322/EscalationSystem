@@ -1,7 +1,6 @@
 using Models;
-using UserService.Domain;
 
-namespace UserService.Application.DTOs;
+namespace UserService.Application.Models.DTOs;
 
 public record RegisterUserDto(
     string FirstName,
