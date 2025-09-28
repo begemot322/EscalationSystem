@@ -10,6 +10,9 @@ services:
     
   redis:
     image: redis:latest
+    
+  minio:
+    image: minio/minio
       
   escalation.api:
     image: escalationapi
@@ -51,3 +54,4 @@ volumes:
   escalation_data:
   user_data:
   redis_data:
+  minio_data:

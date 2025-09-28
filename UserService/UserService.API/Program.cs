@@ -1,8 +1,10 @@
+using Amazon.S3;
 using Microsoft.AspNetCore.CookiePolicy;
 using UserService.API;
 using UserService.Application;
 using UserService.Application.Services.Interfaces;
 using UserService.Infrastructure;
+using UserService.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +34,15 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var bucketService = new BucketInitializationService(
+        services.GetRequiredService<IAmazonS3>());
+    
+    await bucketService.InitializeBucketAsync();
+}
 
 var internalApi = app.MapGroup("/internal");
 
