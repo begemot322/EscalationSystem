@@ -10,5 +10,6 @@ public class User
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
     public string PasswordHash { get; set; }
+    public string? ProfileImageFileName { get; set; }
     public UserRole Role { get; set; }  
 }
