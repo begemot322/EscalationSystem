@@ -1,11 +1,13 @@
 using System.Security.Claims;
 using System.Text;
+using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Models.Options;
 using UserService.Application.Common.Interfaces;
@@ -16,6 +18,7 @@ using UserService.Infrastructure.Data;
 using UserService.Infrastructure.Data.Repositories;
 using UserService.Infrastructure.Identity;
 using UserService.Infrastructure.Identity.Auth;
+using UserService.Infrastructure.Services;
 
 namespace UserService.Infrastructure;
 
@@ -24,8 +27,11 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddHttpContextAccessor();
+
         services.AddData(configuration);
         services.AddAuth(configuration);
+        services.AddAwsS3(configuration);
 
         return services;
     }
@@ -91,7 +97,36 @@ public static class DependencyInjection
 
         services.AddScoped<IJwtProvider, JwtProvider>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
+        
+        services.AddScoped<IUserContext, UserContext>();
 
+        return services;
+    }
+
+    private static IServiceCollection AddAwsS3(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<MinioOptions>(configuration.GetSection("MinioOptions"));
+        
+        services.AddSingleton<IAmazonS3>(sp =>
+        {
+            var minioOptions = sp.GetRequiredService<IOptions<MinioOptions>>().Value;
+
+            var s3Config = new AmazonS3Config
+            {
+                ServiceURL = minioOptions.Endpoint,
+                ForcePathStyle = true, 
+                UseHttp = true
+            };
+
+            return new AmazonS3Client(
+                minioOptions.AccessKey,
+                minioOptions.SecretKey,
+                s3Config
+            );
+        });
+
+        services.AddScoped<IFileStorageService, S3FileStorageService>();
+        
         return services;
     }
 }
