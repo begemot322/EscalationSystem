@@ -22,7 +22,8 @@ public static class DependencyInjection
         services.AddScoped<IEscalationService, Services.Implementation.EscalationService>();
         services.AddScoped<ICriteriaService, CriteriaService>();
         services.AddScoped<ICommentService, CommentService>();
-        
+        services.AddScoped<IEtlService, EtlService>();
+
         //Validation
         services.AddValidatorsFromAssemblyContaining<EscalationDto>();
         
